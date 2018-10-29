@@ -19,7 +19,7 @@ try:
 		if GPIO.input(pir) == True: #If PIR pin goes high, motion is detected
 			print ("Motion Detected!")
 		else:
-			print ("no motion")
+			print ("No Motion Detected!")
 		time.sleep(0.1)
 
 except KeyboardInterrupt: #Ctrl+c
