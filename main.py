@@ -69,6 +69,7 @@ while True:
     inputs["gas"]          = gasSensor()
     inputs["motion"]       = isMotion()
     inputs["keys"]         = PRESSED_KEYS
+    inputs["timestamp"]    = time.time()
     PRESSED_KEYS = []
 
     # call controller
