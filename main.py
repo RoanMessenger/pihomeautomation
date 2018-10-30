@@ -28,8 +28,6 @@ GPIO.cleanup() #reset all GPIO
 FACTORY = rpi_gpio.KeypadFactory()
 KEYPAD = factory.create_keypad(keypad=SETTINGS["keypad_characters"], row_pins=SETTINGS["keypad_row_pins"], col_pins=SETTINGS["keypad_col_pins"])
 PRESSED_KEYS = []
-def handleKey(key):
-    PRESSED_KEYS.push(key)
 KEYPAD.registerKeyPressHandler(handleKey)
 
 # initialize PIR
@@ -107,8 +105,12 @@ while True:
 
 
 # FUNCTIONS -------------------------------------------------------------------------
+def handleKey(key):
+    PRESSED_KEYS.push(key)
+
 def setRelay(num, value):
     # TODO: implement setting relays
+    return
     
 def max6675Temp():
     temp = THERMOCOUPLE.get()
@@ -120,12 +122,12 @@ def isMotion():
 
 def writeToScreen(line1, line2):
     lcd_text(line1,SETTINGS["lcd_line_1"])
-    lcd_text(line2,SETTINGS["lcd_line_2"))
+    lcd_text(line2,SETTINGS["lcd_line_2"])
 
 def log(message):
     now = '[' + time.strftime("%c") + '] '
     with open('main.log', 'a') as f:
-        print(now + message, file=f)
+        f.write(now + message)
         print(now + message)
 
 def sendMessage(message):
