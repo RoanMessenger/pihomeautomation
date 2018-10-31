@@ -16,13 +16,13 @@ with open('initState.json', 'r') as f:
 
 # TESTS -----------------------------------------------------------------------------
 inputs = {}
-inputs["temp_outside"] = nil
-inputs["temp_inside"]  = nil
-inputs["humidity"]     = nil
-inputs["gas"]          = nil
-inputs["motion"]       = nil
-inputs["keys"]         = nil
-inputs["timestamp"]    = nil
+inputs["temp_outside"] = None
+inputs["temp_inside"]  = None
+inputs["humidity"]     = None
+inputs["gas"]          = None
+inputs["motion"]       = None
+inputs["keys"]         = None
+inputs["timestamp"]    = None
 
 # call controller
 result = controller.controller(inputs, STATE, SETTINGS)
