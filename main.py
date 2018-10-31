@@ -73,36 +73,41 @@ while True:
     PRESSED_KEYS = []
 
     # call controller
-    result = controller.controller(STATE, SETTINGS, inputs)
-    newState        = result[0]
-    outputs         = result[1]
-    settingsChanges = result[2]
+    result = controller.controller(inputs, STATE, SETTINGS)
+    outputs         = result[0]
+    stateChanges    = result[1]
+    settingChanges = result[2]
     messages        = result[3]
+    logEntries      = result[4]
 
     # write outputs
-    if 'messages' in outputs:
-        for message in outputs['messagesToSend']:
-            sendMessage(message)
     writeToScreen(outputs['line1'], outputs['line2'])
     setRelay(1, outputs['relay1']);
     setRelay(2, outputs['relay2']);
     setRelay(3, outputs['relay3']);
     setRelay(4, outputs['relay4']);
 
-    # set state to newState
-    STATE = newState
+    # update state
+    for param in stateChanges:
+        STATE[param] = stateChanges[param]
+        log('Parameter "' + param + '" changed to ' + stateChanges[param])
 
     # handle settings changes
-    if len(settingsChanges) > 0:
-        for setting in settingsChanges:
-            SETTINGS[setting] = settingsChanges[setting]
-            log(setting + ' changed to ' + settingsChanges[setting])
+    if len(settingChanges) > 0:
+        for setting in settingChanges:
+            SETTINGS[setting] = settingChanges[setting]
+            log('Setting "' + setting + '" changed to ' + settingChanges[setting])
         with open('settings.json', 'r') as f:
             json.dump(SETTINGS, sort_keys=True, indent=4)
 
-    # handle log messages
+    # handle log entries
+    for entry in logEntries:
+        log(entry)
+
+    # send messages
     for message in messages:
-        log(message)
+        sendMessage(message)
+        log('Sent message: ' + message)
 
 
 # FUNCTIONS -------------------------------------------------------------------------
