@@ -30,6 +30,10 @@ with open('settings.json', 'r') as f:
 with open('initState.json', 'r') as f:
     STATE = json.load(f)
 
+# load initial outputs
+with open('initOutputs.json', 'r') as f:
+    OUTPUTS = json.load(f)
+
 # reset all GPIO
 GPIO.cleanup() #reset all GPIO
 
@@ -84,14 +88,19 @@ while True:
     # call controller
     result = None
     if TESTING:
-        result = testController.controller(inputs, STATE, SETTINGS)
+        result = testController.controller(inputs, OUTPUTS, STATE, SETTINGS)
     else:
-        result = controller.controller(inputs, STATE, SETTINGS)
-    outputs         = result[0]
+        result = controller.controller(inputs, OUTPUTS, STATE, SETTINGS)
+    outputChanges   = result[0]
     stateChanges    = result[1]
     settingChanges  = result[2]
     messages        = result[3]
     logEntries      = result[4]
+
+    # update outputs
+    for otp in outputChanges:
+        OUTPUT[otp] = outputChanges[otp]
+        log('Output "' + otp + '" changed to ' + outputChanges[otp])
 
     # write outputs
     writeToScreen(outputs['line1'], outputs['line2'])

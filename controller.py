@@ -20,8 +20,8 @@
 # relay3
 # relay4
 
-def controller(inputs, state, settings):
-    outputs         = {}
+def controller(inputs, outputs, state, settings):
+    outputChanges   = {}
     stateChanges    = {}
     settingChanges  = {}
     messages        = []
@@ -29,5 +29,5 @@ def controller(inputs, state, settings):
 
     # TODO: write controller
 
-    return (outputs, stateChanges, settingChanges, messages, logEntries)
+    return (outputChanges, stateChanges, settingChanges, messages, logEntries)
 
