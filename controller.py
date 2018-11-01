@@ -1,3 +1,25 @@
+### CONTROLLER ###
+# This receives inputs, state, and settings as an input, and produces a set 
+# of outputs, state changes, setting changes, messages to be sent, and log
+# entries as output
+
+# INPUTS:
+# temp_outside
+# temp_inside
+# humidity
+# gas
+# motion
+# keys
+# timestamp
+
+# OUTPUTS:
+# line1
+# line2
+# relay1
+# relay2
+# relay3
+# relay4
+
 def controller(inputs, state, settings):
     outputs         = {}
     stateChanges    = {}
@@ -5,6 +27,7 @@ def controller(inputs, state, settings):
     messages        = []
     logEntries      = []
 
-    # TODO: Write controller code
+    # TODO: write controller
 
     return (outputs, stateChanges, settingChanges, messages, logEntries)
+
