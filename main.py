@@ -1,5 +1,7 @@
 #!/usr/bin/python
 import controller
+import testController
+import sys
 import rpi_gpio
 import RPi.GPIO as GPIO
 from max6675 import MAX6675, MAX6675Error
@@ -11,6 +13,13 @@ import json
 
 
 # INITIAL SETUP ---------------------------------------------------------------------
+# check if we're in testing mode
+TESTING = False
+if len(sys.argv) == 2:
+    if sys.argv[1] == "test":
+        TESTING = True
+        log("Testing mode!")
+
 log("Initializing...")
 
 # load settings
@@ -73,10 +82,14 @@ while True:
     PRESSED_KEYS = []
 
     # call controller
-    result = controller.controller(inputs, STATE, SETTINGS)
+    result = None
+    if TESTING:
+        result = testController.controller(inputs, STATE, SETTINGS)
+    else:
+        result = controller.controller(inputs, STATE, SETTINGS)
     outputs         = result[0]
     stateChanges    = result[1]
-    settingChanges = result[2]
+    settingChanges  = result[2]
     messages        = result[3]
     logEntries      = result[4]
 
@@ -97,8 +110,9 @@ while True:
         for setting in settingChanges:
             SETTINGS[setting] = settingChanges[setting]
             log('Setting "' + setting + '" changed to ' + settingChanges[setting])
-        with open('settings.json', 'r') as f:
-            json.dump(SETTINGS, sort_keys=True, indent=4)
+        if not TESTING:
+            with open('settings.json', 'r') as f:
+                json.dump(SETTINGS, sort_keys=True, indent=4)
 
     # handle log entries
     for entry in logEntries:
@@ -133,7 +147,8 @@ def writeToScreen(line1, line2):
 def log(message):
     now = '[' + time.strftime("%c") + '] '
     with open('main.log', 'a') as f:
-        f.write(now + message)
+        if not TESTING:
+            f.write(now + message)
         print(now + message)
 
 def sendMessage(message):
