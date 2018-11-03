@@ -121,7 +121,8 @@ if TESTING:
 while True:
     print("1")
     # read inputs
-    temphum = temp_hum_sensor()
+    #temphum = temp_hum_sensor()
+    temphum = (0.0,0.0)
     print("2")
     inputs = {
         "temp_outside":  max6675_temp(),
