@@ -87,7 +87,7 @@ def max6675_temp():
 
 
 def is_motion():
-    return GPIO.input(SETTINGS["pir_pin"])
+    return GPIO.input(SETTINGS["pir_pin"]) == 1
 
 
 def log(message):
