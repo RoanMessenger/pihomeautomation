@@ -83,7 +83,6 @@ for i in range(1, 5):
 # FUNCTIONS -------------------------------------------------------------------------
 def max6675_temp():
     temp = THERMOCOUPLE.get()
-    THERMOCOUPLE.cleanup()
     return temp
 
 
