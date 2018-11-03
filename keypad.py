@@ -12,7 +12,7 @@ class Keypad:
         self.keypad.registerKeyPressHandler(self.handle_key)
 
     def handle_key(self, key):
-        self.pressed_keys.push(key)
+        self.pressed_keys.append(key)
 
     def get_keys(self):
         return self.pressed_keys
