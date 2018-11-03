@@ -119,8 +119,10 @@ if TESTING:
     log("(testing mode)")
 
 while True:
+    print("1")
     # read inputs
     temphum = temp_hum_sensor()
+    print("2")
     inputs = {
         "temp_outside":  max6675_temp(),
         "temp_inside":   temphum[1],
@@ -129,7 +131,9 @@ while True:
         "motion":        is_motion(),
         "keys":          KEYPAD.get_keys(),
         "timestamp":     time.time()}
+    print("3")
     KEYPAD.clear_keys()
+    print("4")
 
     # call controller
     result = None
@@ -139,27 +143,30 @@ while True:
         result = controller.controller(inputs, OUTPUTS, STATE, SETTINGS)
     output_changes, state_changes, setting_changes, messages, log_entries = result
 
+    print("5")
     # update outputs
     for otp in output_changes:
         OUTPUTS[otp] = output_changes[otp]
         log('Output "' + otp + '" changed to ' + str(output_changes[otp]))
 
+    print("6")
     # write outputs
-    print("Writing to LCD...")
     LCD.write_both(OUTPUTS['line1'], OUTPUTS['line2'])
-    print("DONE writing to LCD!")
 
+    print("7")
     for i in range(1, 5):
         x = "relay" + str(i) + "_pin"
         y = 0 if OUTPUTS["relay" + str(i)] else 1
         if x in SETTINGS and SETTINGS[x] > 0:
             GPIO.output(SETTINGS[x], y)
 
+    print("8")
     # update state
     for param in state_changes:
         STATE[param] = state_changes[param]
         log('Parameter "' + param + '" changed to ' + str(state_changes[param]))
 
+    print("9")
     # handle settings changes
     if len(setting_changes) > 0:
         for setting in setting_changes:
@@ -169,10 +176,12 @@ while True:
             with open('settings.json', 'r') as f:
                 json.dump(SETTINGS, sort_keys=True, indent=4)
 
+    print("10")
     # handle log entries
     for entry in log_entries:
         log(entry)
 
+    print("11")
     # send messages
     for message in messages:
         send_message(message)
