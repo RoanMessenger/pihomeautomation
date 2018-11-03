@@ -6,7 +6,7 @@
     ["*",0,"#","D"]
   ],
   "keypad_row_pins": [26,16,20,21],
-  "keypad_col_pints": [5,6,13,19],
+  "keypad_col_pins": [5,6,13,19],
 
   "pir_pin": 23,
 
