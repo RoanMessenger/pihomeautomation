@@ -142,7 +142,7 @@ while True:
     # update outputs
     for otp in output_changes:
         OUTPUTS[otp] = output_changes[otp]
-        log('Output "' + otp + '" changed to ' + output_changes[otp])
+        log('Output "' + otp + '" changed to ' + str(output_changes[otp]))
 
     # write outputs
     LCD.write_both(OUTPUTS['line1'], OUTPUTS['line2'])
