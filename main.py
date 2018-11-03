@@ -43,7 +43,6 @@ KEYPAD = keypad.Keypad(
     SETTINGS["keypad_col_pins"])
 
 # initialize PIR
-GPIO.setmode(GPIO.BOARD)
 GPIO.setup(SETTINGS["pir_pin"], GPIO.IN)
 
 # initialize thermocouple
