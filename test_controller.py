@@ -44,8 +44,10 @@ def controller(inputs, outputs, state, settings):
         state_changes['testing_relay'] = state['testing_relay'] + 1
         if state_changes['testing_relay'] == 5:
             state_changes['testing_relay'] = 1
-        output_changes['relay' + str(state['testing_relay'])] = True
+        output_changes['relay' + str(state_changes['testing_relay'])] = True
         state_changes['testing_print_cycle'] = True
+        output_changes["line1"] = str(inputs["timestamp"])
+        output_changes["line2"] = "Testing Relay " + str(state_changes["testing_relay"])
 
     # this will run the next cycle after the one above
     elif state['testing_print_cycle']:
