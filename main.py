@@ -99,7 +99,10 @@ def log(message):
 
 
 def send_message(message):
-    TWILIO_CLIENT.messages.create(from_=SETTINGS["twilio_from"], to=SETTINGS["twilio_to"], body=message)
+    try:
+        TWILIO_CLIENT.messages.create(from_=SETTINGS["twilio_from"], to=SETTINGS["twilio_to"], body=message)
+    except:
+        log("Error sending message over Twilio!")
 
 
 def temp_hum_sensor():
