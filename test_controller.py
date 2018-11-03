@@ -54,10 +54,10 @@ def controller(inputs, outputs, state, settings):
         log_entries.append("Testing Raspberry PI Home Security System (should repeat every 2s):")
         log_entries.append("INPUTS:")
         for inp in inputs:
-            log_entries.append('  ' + inp + ': ' + inputs[inp])
+            log_entries.append('  ' + inp + ': ' + str(inputs[inp]))
         log_entries.append("OUTPUTS:")
         for otp in outputs:
-            log_entries.append('  ' + otp + ': ' + outputs[otp])
+            log_entries.append('  ' + otp + ': ' + str(outputs[otp]))
         log_entries.append("-----------------------------------------------------")
         log_entries.append("")
 
