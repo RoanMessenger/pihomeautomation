@@ -73,7 +73,12 @@ LCD = lcd.LCD(
     SETTINGS["lcd_line_1"],
     SETTINGS["lcd_line_2"])
 
-# TODO: initialize relay inputs
+# initialize relays
+for i in range(1, 5):
+    x = "relay" + i + "_pin"
+    if x in SETTINGS and SETTINGS[x] > 0:
+        GPIO.setup(SETTINGS[x], GPIO.OUT)
+        GPIO.output(SETTINGS[x], 1)
 
 
 # FUNCTIONS -------------------------------------------------------------------------
@@ -140,7 +145,11 @@ while True:
 
     # write outputs
     LCD.write_both(OUTPUTS['line1'], OUTPUTS['line2'])
-    # TODO: set relay outputs here
+    for i in range(1, 5):
+        x = "relay" + i + "_pin"
+        y = 0 if OUTPUTS["relay" + i] else 1
+        if x in SETTINGS and SETTINGS[x] > 0:
+            GPIO.output(SETTINGS[x], y)
 
     # update state
     for param in state_changes:
