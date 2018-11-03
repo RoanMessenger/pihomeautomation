@@ -29,9 +29,9 @@ def controller(inputs, outputs, state, settings):
 
     # this will run once, at the beginning
     if 'testing_timer' not in state or 'test_setting' not in settings or 'testing_relay' not in state:
-        log_entries.push("Initializing test... (if you see this multiples times, something is broken!)")
-        log_entries.push("Testing messaging system...")
-        messages.push("Messaging system test.")
+        log_entries.append("Initializing test... (if you see this multiples times, something is broken!)")
+        log_entries.append("Testing messaging system...")
+        messages.append("Messaging system test.")
         setting_changes['test_setting'] = True
         state_changes['testing_timer'] = inputs['timestamp']
         state_changes['testing_print_cycle'] = False
@@ -50,16 +50,16 @@ def controller(inputs, outputs, state, settings):
     # this will run the next cycle after the one above
     elif state['testing_print_cycle']:
         state_changes['testing_print_cycle'] = False
-        log_entries.push("")
-        log_entries.push("Testing Raspberry PI Home Security System (should repeat every 2s):")
-        log_entries.push("INPUTS:")
+        log_entries.append("")
+        log_entries.append("Testing Raspberry PI Home Security System (should repeat every 2s):")
+        log_entries.append("INPUTS:")
         for inp in inputs:
-            log_entries.push('  ' + inp + ': ' + inputs[inp])
-        log_entries.push("OUTPUTS:")
+            log_entries.append('  ' + inp + ': ' + inputs[inp])
+        log_entries.append("OUTPUTS:")
         for otp in outputs:
-            log_entries.push('  ' + otp + ': ' + outputs[otp])
-        log_entries.push("-----------------------------------------------------")
-        log_entries.push("")
+            log_entries.append('  ' + otp + ': ' + outputs[otp])
+        log_entries.append("-----------------------------------------------------")
+        log_entries.append("")
 
     return output_changes, state_changes, setting_changes, messages, log_entries
 
