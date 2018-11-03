@@ -145,7 +145,10 @@ while True:
         log('Output "' + otp + '" changed to ' + str(output_changes[otp]))
 
     # write outputs
+    print("Writing to LCD...")
     LCD.write_both(OUTPUTS['line1'], OUTPUTS['line2'])
+    print("DONE writing to LCD!")
+
     for i in range(1, 5):
         x = "relay" + str(i) + "_pin"
         y = 0 if OUTPUTS["relay" + str(i)] else 1
