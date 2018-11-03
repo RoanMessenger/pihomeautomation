@@ -35,7 +35,7 @@
   "twilio_to": "",
 
   "relay1_pin": 21,
-  "relay2_pin": 0,
-  "relay3_pin": 0,
-  "relay4_pin": 0
+  "relay2_pin": 11,
+  "relay3_pin": 13,
+  "relay4_pin": 15
 }
