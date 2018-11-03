@@ -40,11 +40,11 @@ def controller(inputs, outputs, state, settings):
     # this will run every 2 seconds
     elif inputs['timestamp'] - state['testing_timer'] > 2.0:
         state_changes['testing_timer'] = inputs['timestamp']
-        output_changes['relay' + state_changes['testing_relay']] = False
+        output_changes['relay' + str(state['testing_relay'])] = False
         state_changes['testing_relay'] = state['testing_relay'] + 1
         if state_changes['testing_relay'] == 5:
             state_changes['testing_relay'] = 1
-        output_changes['relay' + state_changes['testing_relay']] = True
+        output_changes['relay' + str(state['testing_relay'])] = True
         state_changes['testing_print_cycle'] = True
 
     # this will run the next cycle after the one above
