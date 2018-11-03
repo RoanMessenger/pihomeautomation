@@ -40,7 +40,7 @@ GPIO.cleanup()
 KEYPAD = keypad.Keypad(
     SETTINGS["keypad_characters"],
     SETTINGS["keypad_row_pins"],
-    SETTINGS["keypad_cols_pins"])
+    SETTINGS["keypad_col_pins"])
 
 # initialize PIR
 GPIO.setmode(GPIO.BOARD)
