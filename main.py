@@ -152,13 +152,13 @@ while True:
     # update state
     for param in state_changes:
         STATE[param] = state_changes[param]
-        log('Parameter "' + param + '" changed to ' + state_changes[param])
+        log('Parameter "' + param + '" changed to ' + str(state_changes[param]))
 
     # handle settings changes
     if len(setting_changes) > 0:
         for setting in setting_changes:
             SETTINGS[setting] = setting_changes[setting]
-            log('Setting "' + setting + '" changed to ' + setting_changes[setting])
+            log('Setting "' + setting + '" changed to ' + str(setting_changes[setting]))
         if not TESTING:
             with open('settings.json', 'r') as f:
                 json.dump(SETTINGS, sort_keys=True, indent=4)
@@ -170,5 +170,5 @@ while True:
     # send messages
     for message in messages:
         send_message(message)
-        log('Sent message: ' + message)
+        log('Sent message: ' + str(message))
 
