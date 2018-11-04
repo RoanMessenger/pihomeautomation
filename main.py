@@ -79,6 +79,10 @@ for i in range(1, 5):
         GPIO.setup(SETTINGS[x], GPIO.OUT)
         GPIO.output(SETTINGS[x], 1)
 
+# initialize DHT11 sensor
+DHT11_TEMP = None
+DHT11_HUM = None
+
 
 # FUNCTIONS -------------------------------------------------------------------------
 def max6675_temp():
@@ -106,7 +110,13 @@ def send_message(message):
 
 
 def temp_hum_sensor():
-    return Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, SETTINGS["dht_pin"])
+    global DHT11_TEMP
+    global DHT11_HUM
+    t, h = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, SETTINGS["dht_pin"])
+    if t is not None and h is not None:
+        DHT11_TEMP = temp
+        DHT11_HUM = hum
+    return DHT11_TEMP, DHT11_HUM
 
 
 def gas_sensor():
@@ -120,12 +130,11 @@ if TESTING:
 
 while True:
     # read inputs
-    #temphum = temp_hum_sensor()
-    temphum = (0.0,0.0)
+    temp, hum = temp_hum_sensor()
     inputs = {
         "temp_outside":  max6675_temp(),
-        "temp_inside":   temphum[1],
-        "humidity":      temphum[0],
+        "temp_inside":   temp,
+        "humidity":      hum,
         "gas":           gas_sensor(),
         "motion":        is_motion(),
         "keys":          KEYPAD.get_keys(),
