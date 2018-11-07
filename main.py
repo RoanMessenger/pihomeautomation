@@ -86,8 +86,8 @@ DHT11_HUM = None
 
 # FUNCTIONS -------------------------------------------------------------------------
 def max6675_temp():
-    temp = THERMOCOUPLE.get()
-    return temp
+    t = THERMOCOUPLE.get()
+    return t
 
 
 def is_motion():
