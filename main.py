@@ -94,17 +94,17 @@ def is_motion():
     return GPIO.input(SETTINGS["pir_pin"]) == 1
 
 
-def log(message):
+def log(m):
     now = '[' + time.strftime("%c") + '] '
     with open('main.log', 'a') as f:
         if not TESTING:
-            f.write(now + message)
-        print(now + message)
+            f.write(now + m)
+        print(now + m)
 
 
-def send_message(message):
+def send_message(m):
     try:
-        TWILIO_CLIENT.messages.create(from_=SETTINGS["twilio_from"], to=SETTINGS["twilio_to"], body=message)
+        TWILIO_CLIENT.messages.create(from_=SETTINGS["twilio_from"], to=SETTINGS["twilio_to"], body=m)
     except:
         log("Error sending message over Twilio!")
 
@@ -130,7 +130,7 @@ if TESTING:
 
 while True:
     # read inputs
-    temp, hum = temp_hum_sensor()
+    temp, hum = 0.0, 0.0  #temp_hum_sensor()
     inputs = {
         "temp_outside":  max6675_temp(),
         "temp_inside":   temp,
