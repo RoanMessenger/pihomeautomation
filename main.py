@@ -112,7 +112,7 @@ def send_message(m):
 def temp_hum_sensor():
     global DHT11_TEMP
     global DHT11_HUM
-    t, h = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, SETTINGS["dht_pin"])
+    t, h = Adafruit_DHT.read(Adafruit_DHT.DHT11, SETTINGS["dht_pin"])
     if t is not None and h is not None:
         DHT11_TEMP = t
         DHT11_HUM = h
@@ -130,7 +130,7 @@ if TESTING:
 
 while True:
     # read inputs
-    temp, hum = 0.0, 0.0  #temp_hum_sensor()
+    temp, hum = temp_hum_sensor()
     inputs = {
         "temp_outside":  max6675_temp(),
         "temp_inside":   temp,
