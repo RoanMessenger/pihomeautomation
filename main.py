@@ -114,8 +114,8 @@ def temp_hum_sensor():
     global DHT11_HUM
     t, h = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, SETTINGS["dht_pin"])
     if t is not None and h is not None:
-        DHT11_TEMP = temp
-        DHT11_HUM = hum
+        DHT11_TEMP = t
+        DHT11_HUM = h
     return DHT11_TEMP, DHT11_HUM
 
 
