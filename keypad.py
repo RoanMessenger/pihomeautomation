@@ -8,14 +8,12 @@ class Keypad:
             keypad=characters,
             row_pins=row_pins,
             col_pins=col_pins)
-        self.pressed_keys = []
+        self.pressed_key = None
         self.keypad.registerKeyPressHandler(self.handle_key)
 
     def handle_key(self, key):
-        self.pressed_keys.append(key)
+        self.pressed_key = key
 
-    def get_keys(self):
-        return self.pressed_keys
+    def get_key(self):
+        return self.pressed_key
 
-    def clear_keys(self):
-        self.pressed_keys = []

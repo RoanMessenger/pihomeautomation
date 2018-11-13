@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://vuejs.org/js/vue.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+    <title>Testing Simulator</title>
+    <style>
+        .case {
+            width: 400px;
+            height: 593px;
+            background: linear-gradient(to bottom right, #8c6529, #785115);
+            border-top: 20px solid rgba(255,255,255,0.3);
+            border-left: 20px solid rgba(255,255,255,0.3);
+            border-bottom: 20px solid rgba(0,0,0,0.3);
+            border-right: 20px solid rgba(0,0,0,0.3);
+            margin: auto;
+            margin-top: 30px;
+            border-radius: 5px;
+            position: relative;
+            user-select: none;
+        }
+        .case .screen {
+            width: 210px;
+            background: #202070;
+            border-top: 9px solid black;
+            border-bottom: 9px solid black;
+            border-left: 16px solid black;
+            border-right: 16px solid black;
+            margin: auto;
+            margin-top: 60px;
+            padding: 2px 10px;
+            padding-top: 4px;
+            border-radius: 5px;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+        .case .screen .line {
+            color: #AAAABB;
+            overflow: hidden;
+            font-size: 22px;
+            font-family: courier;
+        }
+        .case .keypad {
+            width: 210px;
+            height: 210px;
+            margin: auto;
+            margin-top: 60px;
+            table-layout: fixed;
+            background: #404040;
+            border-radius: 15px;
+            border: 1px solid black;
+            box-shadow: inset 2px 2px 0 black;
+        }
+        .case .keypad td {
+            padding: 6px;
+            padding-bottom: 10px;
+            padding-right: 10px;
+        }
+        .case .keypad div {
+            color: #AAAAAA;
+            text-align: center;
+            border-radius: 5px;
+            background: radial-gradient(black, #303030);
+            height: 100%;
+            width: 100%;
+            font-size: 28px;
+            user-select: none;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 black;
+            margin-bottom: 2px;
+            margin-right: 2px;
+        }
+        .case .keypad div:active {
+            box-shadow: none;
+            margin-bottom: 0;
+            margin-right: 0;
+            margin-top: 2px;
+            margin-left: 2px;
+        }
+        .case .alarm {
+            position: absolute;
+            background: radial-gradient(rgba(0,0,0,0), rgba(0,0,0,0.5));
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            top: -45px;
+            z-index: -1;
+            left: 0;
+            right: 0;
+            margin: auto;
+        }
+        .case .alarm.active {
+            animation: flash linear 0.5s infinite;
+        }
+        @keyframes flash {
+            0% { }
+            50% { background: radial-gradient(#FF0000, #880000); box-shadow: 0 0 10px red; }
+            100% { }
+        }
+        .inputs, .outputs {
+            width: 50%;
+            margin-top: 40px;
+            color: rgba(255, 255, 255, 0.4);
+            text-shadow: -1px -1px 0 rgba(0,0,0,0.5);
+        }
+        .outputs {
+            float: right;
+            text-align: right;
+        }
+        .inputs {
+            float: left;
+        }
+        .inputs > div, .outputs > div {
+            padding: 8px;
+        }
+        .inputs > div {
+            padding-left: 12px;
+        }
+        .outputs > div {
+            padding-right: 12px;
+        }
+        .button {
+            cursor: pointer;
+            user-select: none;
+            padding-left: 8px;
+            padding-right: 8px;
+            border-radius: 5px;
+            box-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+            margin-bottom: 1px;
+            margin-right: 1px;
+            display: inline-block;
+        }
+        .button:active {
+            box-shadow: inset 1px 1px 0 rgba(0,0,0,0.5);
+        }
+        .value {
+            width: 20px;
+            display: inline-block;
+            text-align: center;
+        }
+        .led {
+            background: radial-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.2));
+            width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 2px;
+            margin-bottom: -2px;
+        }
+        .led.active {
+            background: radial-gradient(#00FF00, #008800); box-shadow: 0 0 10px #00FF00;
+        }
+        .led.yellow.active {
+            background: radial-gradient(#FFFF00, #888800); box-shadow: 0 0 10px #FFFF00;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="case">
+            <div class="alarm" :class="{'active': alarm}"></div>
+            <div class="screen">
+                <div class="line">{{line1}}</div>
+                <div class="line">{{line2}}</div>
+            </div>
+            <table class="keypad">
+                <tr v-for="row in keys">
+                    <td v-for="key in row" @click="press(key)">
+                        <div>{{key}}</div>
+                    </td>
+                </tr>
+            </table>
+            <div class="inputs">
+                <div>
+                    <span class="button" @click="lowerTempInside">-</span>
+                    <span class="value">{{tempInside}}</span>
+                    <span class="button" @click="raiseTempInside">+</span>
+                    &nbsp;
+                    Inside Temp
+                </div>
+                <div>
+                    <span class="button" @click="lowerTempOutside">-</span>
+                    <span class="value">{{tempOutside}}</span>
+                    <span class="button" @click="raiseTempOutside">+</span>
+                    &nbsp;
+                    Outside Temp
+                </div>
+                <div>
+                    <span class="button" @click="lowerHumidity">-</span>
+                    <span class="value">{{humidity}}</span>
+                    <span class="button" @click="raiseHumidity">+</span>
+                    &nbsp;
+                    Humidity
+                </div>
+                <div>
+                    <div class="button" @click="toggleMotion">
+                        <div class="yellow led" :class="{'active': motion}"></div>
+                        &nbsp;
+                        Motion
+                    </div>
+                    &nbsp;
+                    <div class="button" @click="toggleGas">
+                        <div class="yellow led" :class="{'active': gas}"></div>
+                        &nbsp;
+                        Gas
+                    </div>
+                </div>
+            </div>
+            <div class="outputs">
+                <div>
+                    Relay One
+                    &nbsp;
+                    <div class="led" :class="{'active': relays[0]}"></div>
+                </div>
+                <div>
+                    Relay Two
+                    &nbsp;
+                    <div class="led" :class="{'active': relays[1]}"></div>
+                </div>
+                <div>
+                    Relay Three
+                    &nbsp;
+                    <div class="led" :class="{'active': relays[2]}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                //outputs
+                line1: '1234567890123456789',
+                line2: 'ABCDEFGHIJKLMNOPQRS',
+                alarm: false,
+                relays: [false, false, false],
+
+                //inputs
+                gas: false,
+                motion: false,
+                tempInside: 20.0,
+                tempOutside: 10.0,
+                humidity: 50.0,
+
+                //constants
+                keys: [
+                    [1,2,3,'A'],
+                    [4,5,6,'B'],
+                    [7,8,9,'C'],
+                    ['*',0,'#','D'],
+                ],
+                tempAdjustment: 5.0,
+                humidityAdjustment: 10.0,
+                socket: null,
+            },
+            created() {
+                this.socket = io.connect('http://127.0.0.1:5000');
+                this.socket.on('connect', function() {
+                    console.log('Connected to server!');
+                    this.sendInputs();
+                }.bind(this));
+                this.socket.on('message', function(msg) {
+                    console.log('Server: ' + msg);
+                });
+            },
+            watch: {
+                gas(val) { this.sendInputs(); },
+                motion(val) { this.sendInputs(); },
+                tempInside(val) { this.sendInputs(); },
+                tempOutside(val) { this.sendInputs(); },
+                humidity(val) { this.sendInputs(); },
+            },
+            methods: {
+                sendInputs() {
+                    this.socket.send({
+                        gas: this.gas,
+                        motion: this.motion,
+                        temp_inside: this.tempInside,
+                        temp_outside: this.tempOutside,
+                        humidity: this.humidity,
+                    });
+                },
+
+                //actions
+                press(key) { this.socket.send(key); },
+                raiseTempInside() { this.tempInside += this.tempAdjustment },
+                lowerTempInside() { this.tempInside -= this.tempAdjustment },
+                raiseTempOutside() { this.tempOutside += this.tempAdjustment },
+                lowerTempOutside() { this.tempOutside -= this.tempAdjustment },
+                raiseHumidity() { this.humidity += this.humidityAdjustment },
+                lowerHumidity() { this.humidity -= this.humidityAdjustment },
+                toggleMotion() { this.motion = !this.motion; },
+                toggleGas() { this.gas = !this.gas; },
+            },
+        });
+    </script>
+</html>

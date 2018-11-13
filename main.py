@@ -137,9 +137,8 @@ while True:
         "humidity":      hum,
         "gas":           gas_sensor(),
         "motion":        is_motion(),
-        "keys":          KEYPAD.get_keys(),
+        "keys":          KEYPAD.get_key(),
         "timestamp":     time.time()}
-    KEYPAD.clear_keys()
 
     # call controller
     result = None
