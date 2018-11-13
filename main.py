@@ -25,10 +25,6 @@ if len(sys.argv) == 2:
 with open('settings.json', 'r') as f:
     SETTINGS = json.load(f)
 
-# load initial state
-with open('init_state.json', 'r') as f:
-    STATE = json.load(f)
-
 # load initial outputs
 with open('init_outputs.json', 'r') as f:
     OUTPUTS = json.load(f)
@@ -72,12 +68,15 @@ LCD = lcd.LCD(
     SETTINGS["lcd_line_1"],
     SETTINGS["lcd_line_2"])
 
-# initialize relays
-for i in range(1, 5):
+# initialize relays and alarm
+for i in range(1, 4):
     x = "relay" + str(i) + "_pin"
     if x in SETTINGS and SETTINGS[x] > 0:
         GPIO.setup(SETTINGS[x], GPIO.OUT)
         GPIO.output(SETTINGS[x], 1)
+if "alarm_pin" in SETTINGS and SETTINGS["alarm_pin"] > 0:
+    GPIO.setup(SETTINGS["alarm_pin"], GPIO.OUT)
+    GPIO.output(SETTINGS["alarm_pin"], 1)
 
 # initialize DHT11 sensor
 DHT11_TEMP = None
@@ -127,61 +126,75 @@ def gas_sensor():
 log("Started up.")
 if TESTING:
     log("(testing mode)")
-
+old_inputs = {}
+inputs = {}
 while True:
     # read inputs
     temp, hum = temp_hum_sensor()
+    old_inputs = inputs
     inputs = {
         "temp_outside":  max6675_temp(),
         "temp_inside":   temp,
         "humidity":      hum,
         "gas":           gas_sensor(),
         "motion":        is_motion(),
-        "keys":          KEYPAD.get_key(),
-        "timestamp":     time.time()}
+        "timestamp":     int(time.time())}
 
-    # call controller
-    result = None
-    if TESTING:
-        result = test_controller.controller(inputs, OUTPUTS, STATE, SETTINGS)
-    else:
-        result = controller.controller(inputs, OUTPUTS, STATE, SETTINGS)
-    output_changes, state_changes, setting_changes, messages, log_entries = result
+    # for each change in inputs, generate event
+    events = []
+    for i in inputs:
+        if i not in old_inputs:
+            events.append(("change", i, None, inputs[i]))
+        elif inputs[i] != old_inputs[i]:
+            events.append(("change", i, old_inputs[i], inputs[i]))
+    for i in old_inputs:
+        if i not in inputs:
+            events.append(("change", i, old_inputs[i], None))
 
-    # update outputs
-    for otp in output_changes:
-        OUTPUTS[otp] = output_changes[otp]
-        log('Output "' + otp + '" changed to ' + str(output_changes[otp]))
+    # if a key is being pressed, generate an event for it
+    key = KEYPAD.get_key()
+    if key:
+        events.append(("press", key))
 
-    # write outputs
-    LCD.write_both(OUTPUTS['line1'], OUTPUTS['line2'])
+    # call controller for each event
+    for e in events:
+        if TESTING:
+            result = test_controller.handle_event(e, inputs, OUTPUTS, SETTINGS)
+        else:
+            result = controller.handle_event(e, inputs, OUTPUTS, SETTINGS)
+        output_changes, setting_changes, messages, log_entries = result
 
-    for i in range(1, 5):
-        x = "relay" + str(i) + "_pin"
-        y = 0 if OUTPUTS["relay" + str(i)] else 1
-        if x in SETTINGS and SETTINGS[x] > 0:
-            GPIO.output(SETTINGS[x], y)
+        # update outputs
+        for otp in output_changes:
+            OUTPUTS[otp] = output_changes[otp]
+            log('Output "' + otp + '" changed to ' + str(output_changes[otp]))
 
-    # update state
-    for param in state_changes:
-        STATE[param] = state_changes[param]
-        log('Parameter "' + param + '" changed to ' + str(state_changes[param]))
+        # write outputs
+        LCD.write_both(OUTPUTS['line1'], OUTPUTS['line2'])
+        for i in range(1, 4):
+            x = "relay" + str(i) + "_pin"
+            y = 0 if OUTPUTS["relay" + str(i)] else 1
+            if x in SETTINGS and SETTINGS[x] > 0:
+                GPIO.output(SETTINGS[x], y)
+        a = 0 if OUTPUTS["alarm"] else 1
+        if "alarm_pin" in SETTINGS and SETTINGS["alarm_pin"] > 0:
+            GPIO.output(SETTINGS["alarm_pin"], a)
 
-    # handle settings changes
-    if len(setting_changes) > 0:
-        for setting in setting_changes:
-            SETTINGS[setting] = setting_changes[setting]
-            log('Setting "' + setting + '" changed to ' + str(setting_changes[setting]))
-        if not TESTING:
-            with open('settings.json', 'r') as f:
-                json.dump(SETTINGS, sort_keys=True, indent=4)
+        # handle settings changes
+        if len(setting_changes) > 0:
+            for setting in setting_changes:
+                SETTINGS[setting] = setting_changes[setting]
+                log('Setting "' + setting + '" changed to ' + str(setting_changes[setting]))
+            if not TESTING:
+                with open('settings.json', 'r') as f:
+                    json.dump(SETTINGS, sort_keys=True, indent=4)
 
-    # handle log entries
-    for entry in log_entries:
-        log(entry)
+        # handle log entries
+        for entry in log_entries:
+            log(entry)
 
-    # send messages
-    for message in messages:
-        send_message(message)
-        log('Sent message: ' + str(message))
+        # send messages
+        for message in messages:
+            send_message(message)
+            log('Sent message: ' + str(message))
 

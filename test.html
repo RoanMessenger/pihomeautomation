@@ -39,6 +39,7 @@
             overflow: hidden;
             font-size: 22px;
             font-family: courier;
+            white-space: nowrap;
         }
         .case .keypad {
             width: 210px;
@@ -261,8 +262,16 @@
                     this.sendInputs();
                 }.bind(this));
                 this.socket.on('message', function(msg) {
-                    console.log('Server: ' + msg);
-                });
+                    this.alarm = msg.alarm;
+                    this.relays[0] = msg.relay1;
+                    this.relays[1] = msg.relay2;
+                    this.relays[2] = msg.relay3;
+                    this.line1 = msg.line1;
+                    this.line2 = msg.line2;
+                }.bind(this));
+                setInterval(function() {
+                    this.sendInputs();
+                }.bind(this), 1000);
             },
             watch: {
                 gas(val) { this.sendInputs(); },
@@ -279,6 +288,7 @@
                         temp_inside: this.tempInside,
                         temp_outside: this.tempOutside,
                         humidity: this.humidity,
+                        timestamp: Math.floor(Date.now() / 1000),
                     });
                 },
 

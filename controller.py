@@ -18,17 +18,16 @@
 # relay1
 # relay2
 # relay3
-# relay4
+# alarm
 
 
-def controller(inputs, outputs, state, settings):
+def handle_event(event, inputs, outputs, settings):
     output_changes = {}
-    state_changes = {}
     setting_changes = {}
     messages = []
     log_entries = []
 
     # TODO: write controller
 
-    return output_changes, state_changes, setting_changes, messages, log_entries
+    return output_changes, setting_changes, messages, log_entries
 

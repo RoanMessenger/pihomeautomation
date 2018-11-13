@@ -17,51 +17,78 @@
 # relay1
 # relay2
 # relay3
-# relay4
+# alarm
+
+from datetime import datetime
+
+SECONDS_BETWEEN_TESTS = 4
+
+first_run = True
+testing_relay = 1
+last_test_time = 0
+testing_print_cycle = False
 
 
-def controller(inputs, outputs, state, settings):
+def handle_event(event, inputs, outputs, settings):
+    global testing_relay, last_test_time, testing_print_cycle, first_run
     output_changes = {}
-    state_changes = {}
     setting_changes = {}
     messages = []
     log_entries = []
 
-    # this will run once, at the beginning
-    if 'testing_timer' not in state or 'test_setting' not in settings or 'testing_relay' not in state:
-        log_entries.append("Initializing test... (if you see this multiples times, something is broken!)")
-        log_entries.append("Testing messaging system...")
-        messages.append("Messaging system test.")
-        setting_changes['test_setting'] = True
-        state_changes['testing_timer'] = inputs['timestamp']
-        state_changes['testing_print_cycle'] = False
-        state_changes['testing_relay'] = 1
-    
-    # this will run every 2 seconds
-    elif inputs['timestamp'] - state['testing_timer'] > 2.0:
-        state_changes['testing_timer'] = inputs['timestamp']
-        output_changes['relay' + str(state['testing_relay'])] = False
-        state_changes['testing_relay'] = state['testing_relay'] + 1
-        if state_changes['testing_relay'] == 5:
-            state_changes['testing_relay'] = 1
-        output_changes['relay' + str(state_changes['testing_relay'])] = True
-        state_changes['testing_print_cycle'] = True
-        output_changes["line1"] = str(inputs["timestamp"])
-        output_changes["line2"] = "Testing Relay " + str(state_changes["testing_relay"])
+    # Listed for time change events (which run once per second)
+    if event[0] == 'change' and event[1] == 'timestamp' and event[3] - last_test_time >= SECONDS_BETWEEN_TESTS:
+        # this will run once, at the beginning
+        if first_run:
+            log_entries.append("Initializing test... (if you see this multiples times, something is broken!)")
+            log_entries.append("Testing messaging system...")
+            log_entries.append("")
+            messages.append("Messaging system test.")
+            setting_changes['test_setting'] = True
+            first_run = False
+        elif 'test_setting' not in settings:
+            log_entries.append("WARNING: settings are not being saved correctly!!")
 
-    # this will run the next cycle after the one above
-    elif state['testing_print_cycle']:
-        state_changes['testing_print_cycle'] = False
-        log_entries.append("")
+        # reset timer
+        last_test_time = inputs['timestamp']
+
+        # turn off last relay / alarm
+        if testing_relay != 4:
+            output_changes['relay' + str(testing_relay)] = False
+        else:
+            output_changes['alarm'] = False
+
+        # go to next relay / alarm
+        testing_relay += 1
+        if testing_relay == 5:
+            testing_relay = 1
+
+        # turn on next relay / alarm
+        if testing_relay != 4:
+            output_changes['relay' + str(testing_relay)] = True
+        else:
+            output_changes['alarm'] = True
+
+        # update screen output
+        output_changes["line1"] = datetime.utcfromtimestamp(inputs["timestamp"]).strftime('%m/%d %H:%M:%S')
+        if testing_relay != 4:
+            output_changes["line2"] = "Testing Relay " + str(testing_relay)
+        else:
+            output_changes["line2"] = "Testing Alarm"
+
+        # print status
         log_entries.append("Testing Raspberry PI Home Security System (should repeat every 2s):")
-        log_entries.append("INPUTS:")
         for inp in inputs:
             log_entries.append('  ' + inp + ': ' + str(inputs[inp]))
-        log_entries.append("OUTPUTS:")
-        for otp in outputs:
-            log_entries.append('  ' + otp + ': ' + str(outputs[otp]))
         log_entries.append("-----------------------------------------------------")
         log_entries.append("")
 
-    return output_changes, state_changes, setting_changes, messages, log_entries
+    elif event[0] == 'change' and event[1] != 'timestamp' and event[2] is not None:
+        output_changes["line1"] = str(event[1])
+        output_changes["line2"] = "Changed To " + str(event[3])
+
+    elif event[0] == 'press':
+        output_changes["line2"] = "Pressed " + str(event[1])
+
+    return output_changes, setting_changes, messages, log_entries
 
