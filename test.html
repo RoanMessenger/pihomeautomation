@@ -262,12 +262,17 @@
                     this.sendInputs();
                 }.bind(this));
                 this.socket.on('message', function(msg) {
-                    this.alarm = msg.alarm;
-                    this.relays[0] = msg.relay1;
-                    this.relays[1] = msg.relay2;
-                    this.relays[2] = msg.relay3;
-                    this.line1 = msg.line1;
-                    this.line2 = msg.line2;
+                    if (typeof msg == 'string') {
+                        window.alert(msg);
+                        console.log(msg);
+                    } else {
+                        this.alarm = msg.alarm;
+                        this.relays[0] = msg.relay1;
+                        this.relays[1] = msg.relay2;
+                        this.relays[2] = msg.relay3;
+                        this.line1 = msg.line1;
+                        this.line2 = msg.line2;
+                    }
                 }.bind(this));
                 setInterval(function() {
                     this.sendInputs();

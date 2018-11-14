@@ -36,7 +36,7 @@ def handle_event(event, inputs, outputs, settings):
     messages = []
     log_entries = []
 
-    # Listed for time change events (which run once per second)
+    # Listen for time change events (which run once per second)
     if event[0] == 'change' and event[1] == 'timestamp' and event[3] - last_test_time >= SECONDS_BETWEEN_TESTS:
         # this will run once, at the beginning
         if first_run:

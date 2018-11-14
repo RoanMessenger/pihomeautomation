@@ -7,6 +7,7 @@ from flask import Flask
 from flask_socketio import SocketIO, send
 import sys
 import os
+import webbrowser
 
 print("Starting up...")
 
@@ -29,6 +30,13 @@ inputs = {}
 
 app = Flask(__name__)
 socketio = SocketIO(app)
+
+
+# serve client
+@app.route("/")
+def index():
+    with open('test.html', 'r') as f:
+        return f.read()
 
 
 @socketio.on('message')
@@ -78,8 +86,14 @@ def handleMessage(msg):
 
         # send messages
         for message in messages:
+            send(message)
             print('Sent message: ' + str(message))
 
 
+# open web browser to test client
+webbrowser.open('http://127.0.0.1:5000')
+print("Navigate to http://127.0.0.1:5000/ to access testing interface.")
+
+# start server
 if __name__ == '__main__':
     socketio.run(app)
