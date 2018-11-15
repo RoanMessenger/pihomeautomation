@@ -161,8 +161,8 @@
         <div class="case">
             <div class="alarm" :class="{'active': alarm}"></div>
             <div class="screen">
-                <div class="line">{{line1}}</div>
-                <div class="line">{{line2}}</div>
+                <div class="line" v-html="line1_html"></div>
+                <div class="line" v-html="line2_html"></div>
             </div>
             <table class="keypad">
                 <tr v-for="row in keys">
@@ -232,8 +232,8 @@
             el: '#app',
             data: {
                 //outputs
-                line1: '1234567890123456789',
-                line2: 'ABCDEFGHIJKLMNOPQRS',
+                line1: ' ',
+                line2: ' ',
                 alarm: false,
                 relays: [false, false, false],
 
@@ -254,6 +254,14 @@
                 tempAdjustment: 5.0,
                 humidityAdjustment: 10.0,
                 socket: null,
+            },
+            computed: {
+                line1_html() {
+                    return this.line1.replace(' ', '&nbsp;');
+                },
+                line2_html() {
+                    return this.line2.replace(' ', '&nbsp;');
+                },
             },
             created() {
                 this.socket = io.connect('http://127.0.0.1:5000');
