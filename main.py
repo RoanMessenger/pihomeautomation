@@ -16,67 +16,65 @@ import keypad
 # INITIAL SETUP ---------------------------------------------------------------------
 print("Starting up...")
 # check if we're in testing mode
-TESTING = False
+testing = False
 if len(sys.argv) == 2:
     if sys.argv[1] == "test":
-        TESTING = True
+        testing = True
+cont = test_controller if testing else controller
+state = cont.init_state()
 
 # load settings
 with open('settings.json', 'r') as f:
-    SETTINGS = json.load(f)
-
-# load initial outputs
-with open('init_outputs.json', 'r') as f:
-    OUTPUTS = json.load(f)
+    settings = json.load(f)
 
 # reset all GPIO
 GPIO.cleanup()
 
 # initialize keypad
 KEYPAD = keypad.Keypad(
-    SETTINGS["keypad_characters"],
-    SETTINGS["keypad_row_pins"],
-    SETTINGS["keypad_col_pins"])
+    settings["keypad_characters"],
+    settings["keypad_row_pins"],
+    settings["keypad_col_pins"])
 
 # initialize PIR
-GPIO.setup(SETTINGS["pir_pin"], GPIO.IN)
+GPIO.setup(settings["pir_pin"], GPIO.IN)
 
 # initialize thermocouple
 THERMOCOUPLE = MAX6675(
-    SETTINGS["max6675_cs_pin"],
-    SETTINGS["max6675_clock_pin"],
-    SETTINGS["max6675_data_pin"],
-    SETTINGS["max6675_units"])
+    settings["max6675_cs_pin"],
+    settings["max6675_clock_pin"],
+    settings["max6675_data_pin"],
+    settings["max6675_units"])
 
 # initialize twilio
-TWILIO_CLIENT = Client(SETTINGS["twilio_account_sid"], SETTINGS["twilio_auth_token"])
+TWILIO_CLIENT = Client(settings["twilio_account_sid"], settings["twilio_auth_token"])
 
 # initialize gas sensor
-GAS_SENSOR = DigitalInputDevice(SETTINGS["gas_pin"])
+GAS_SENSOR = DigitalInputDevice(settings["gas_pin"])
 
 # initialize LCD
 LCD = lcd.LCD(
-    SETTINGS["lcd_rs"],
-    SETTINGS["lcd_e"],
-    SETTINGS["lcd_d4"],
-    SETTINGS["lcd_d5"],
-    SETTINGS["lcd_d6"],
-    SETTINGS["lcd_d7"],
-    SETTINGS["lcd_chr"],
-    SETTINGS["lcd_cmd"],
-    SETTINGS["lcd_chars"],
-    SETTINGS["lcd_line_1"],
-    SETTINGS["lcd_line_2"])
+    settings["lcd_rs"],
+    settings["lcd_e"],
+    settings["lcd_d4"],
+    settings["lcd_d5"],
+    settings["lcd_d6"],
+    settings["lcd_d7"],
+    settings["lcd_chr"],
+    settings["lcd_cmd"],
+    settings["lcd_chars"],
+    settings["lcd_line_1"],
+    settings["lcd_line_2"])
 
 # initialize relays and alarm
 for i in range(1, 4):
     x = "relay" + str(i) + "_pin"
-    if x in SETTINGS and SETTINGS[x] > 0:
-        GPIO.setup(SETTINGS[x], GPIO.OUT)
-        GPIO.output(SETTINGS[x], 1)
-if "alarm_pin" in SETTINGS and SETTINGS["alarm_pin"] > 0:
-    GPIO.setup(SETTINGS["alarm_pin"], GPIO.OUT)
-    GPIO.output(SETTINGS["alarm_pin"], 1)
+    if x in settings and settings[x] > 0:
+        GPIO.setup(settings[x], GPIO.OUT)
+        GPIO.output(settings[x], 1)
+if "alarm_pin" in settings and settings["alarm_pin"] > 0:
+    GPIO.setup(settings["alarm_pin"], GPIO.OUT)
+    GPIO.output(settings["alarm_pin"], 1)
 
 # initialize DHT11 sensor
 DHT11_TEMP = None
@@ -90,20 +88,20 @@ def max6675_temp():
 
 
 def is_motion():
-    return GPIO.input(SETTINGS["pir_pin"]) == 1
+    return GPIO.input(settings["pir_pin"]) == 1
 
 
 def log(m):
     now = '[' + time.strftime("%c") + '] '
     with open('main.log', 'a') as f:
-        if not TESTING:
+        if not testing:
             f.write(now + m)
         print(now + m)
 
 
 def send_message(m):
     try:
-        TWILIO_CLIENT.messages.create(from_=SETTINGS["twilio_from"], to=SETTINGS["twilio_to"], body=m)
+        TWILIO_CLIENT.messages.create(from_=settings["twilio_from"], to=settings["twilio_to"], body=m)
     except:
         log("Error sending message over Twilio!")
 
@@ -111,7 +109,7 @@ def send_message(m):
 def temp_hum_sensor():
     global DHT11_TEMP
     global DHT11_HUM
-    t, h = Adafruit_DHT.read(Adafruit_DHT.DHT11, SETTINGS["dht_pin"])
+    t, h = Adafruit_DHT.read(Adafruit_DHT.DHT11, settings["dht_pin"])
     if t is not None and h is not None:
         DHT11_TEMP = t
         DHT11_HUM = h
@@ -124,7 +122,7 @@ def gas_sensor():
 
 # MAIN LOOP -------------------------------------------------------------------------
 log("Started up.")
-if TESTING:
+if testing:
     log("(testing mode)")
 old_inputs = {}
 inputs = {}
@@ -158,36 +156,16 @@ while True:
 
     # call controller for each event
     for e in events:
-        if TESTING:
-            result = test_controller.handle_event(e, inputs, OUTPUTS, SETTINGS)
-        else:
-            result = controller.handle_event(e, inputs, OUTPUTS, SETTINGS)
-        output_changes, setting_changes, messages, log_entries = result
-
-        # update outputs
-        for otp in output_changes:
-            OUTPUTS[otp] = output_changes[otp]
-            log('Output "' + otp + '" changed to ' + str(output_changes[otp]))
-
-        # write outputs
-        LCD.write_both(OUTPUTS['line1'], OUTPUTS['line2'])
-        for i in range(1, 4):
-            x = "relay" + str(i) + "_pin"
-            y = 0 if OUTPUTS["relay" + str(i)] else 1
-            if x in SETTINGS and SETTINGS[x] > 0:
-                GPIO.output(SETTINGS[x], y)
-        a = 0 if OUTPUTS["alarm"] else 1
-        if "alarm_pin" in SETTINGS and SETTINGS["alarm_pin"] > 0:
-            GPIO.output(SETTINGS["alarm_pin"], a)
+        state, setting_changes, log_entries, messages = cont.handle_event(e, inputs, state, settings)
 
         # handle settings changes
         if len(setting_changes) > 0:
             for setting in setting_changes:
-                SETTINGS[setting] = setting_changes[setting]
+                settings[setting] = setting_changes[setting]
                 log('Setting "' + setting + '" changed to ' + str(setting_changes[setting]))
-            if not TESTING:
+            if not testing:
                 with open('settings.json', 'r') as f:
-                    json.dump(SETTINGS, sort_keys=True, indent=4)
+                    json.dump(settings, sort_keys=True, indent=4)
 
         # handle log entries
         for entry in log_entries:
@@ -198,3 +176,14 @@ while True:
             send_message(message)
             log('Sent message: ' + str(message))
 
+    # write outputs
+    outputs = cont.get_outputs(inputs, state, settings)
+    LCD.write_both(outputs['line1'], outputs['line2'])
+    for i in range(1, 4):
+        x = "relay" + str(i) + "_pin"
+        y = 0 if outputs["relay" + str(i)] else 1
+        if x in settings and settings[x] > 0:
+            GPIO.output(settings[x], y)
+    a = 0 if outputs["alarm"] else 1
+    if "alarm_pin" in settings and settings["alarm_pin"] > 0:
+        GPIO.output(settings["alarm_pin"], a)

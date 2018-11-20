@@ -12,21 +12,19 @@ import webbrowser
 print("Starting up...")
 
 # check if we're in testing mode
-TESTING = False
+testing = False
 if len(sys.argv) == 2:
     if sys.argv[1] == "test":
         print("(testing mode)")
-        TESTING = True
+        testing = True
 
 # load settings
 with open('settings.json', 'r') as f:
-    SETTINGS = json.load(f)
-
-# load initial outputs
-with open('init_outputs.json', 'r') as f:
-    OUTPUTS = json.load(f)
+    settings = json.load(f)
 
 inputs = {}
+cont = test_controller if testing else controller
+state = cont.init_state()
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -40,8 +38,8 @@ def index():
 
 
 @socketio.on('message')
-def handleMessage(msg):
-    global inputs, OUTPUTS, SETTINGS, TESTING
+def handle_message(msg):
+    global inputs, state, settings, testing
 
     # generate event(s)
     events = []
@@ -59,25 +57,12 @@ def handleMessage(msg):
     for e in events:
         print('EVENT: ' + str(e))
 
-        if TESTING:
-            result = test_controller.handle_event(e, inputs, OUTPUTS, SETTINGS)
-        else:
-            result = controller.handle_event(e, inputs, OUTPUTS, SETTINGS)
-        output_changes, setting_changes, messages, log_entries = result
-
-        # update outputs
-        for otp in output_changes:
-            OUTPUTS[otp] = output_changes[otp]
-            print('Output "' + otp + '" changed to ' + str(output_changes[otp]))
-
-        # send output changes to server
-        if len(output_changes) > 0:
-            send(OUTPUTS)
+        state, setting_changes, log_entries, messages = cont.handle_event(e, inputs, state, settings)
 
         # handle settings changes
         if len(setting_changes) > 0:
             for setting in setting_changes:
-                SETTINGS[setting] = setting_changes[setting]
+                settings[setting] = setting_changes[setting]
                 print('Setting "' + setting + '" changed to ' + str(setting_changes[setting]))
 
         # handle log entries
@@ -88,6 +73,9 @@ def handleMessage(msg):
         for message in messages:
             send(message)
             print('Sent message: ' + str(message))
+
+    # send output changes to server
+    send(cont.get_outputs(inputs, state, settings))
 
 
 # open web browser to test client

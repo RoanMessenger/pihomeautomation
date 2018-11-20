@@ -91,14 +91,6 @@ def menu():
     }
 
 
-# STATE:
-selection_index = 0
-screen_position = 0
-selection_index_stack = []
-screen_position_stack = []
-path = []
-
-
 # COMPUTED VALUES
 def render_list_line(l, i, sel):
     if 0 <= i < len(l):
@@ -109,39 +101,34 @@ def render_list_line(l, i, sel):
         return ''
 
 
-def render_list(l):
-    global selection_index, screen_position
-    if 0 <= selection_index < len(l) and (0 <= screen_position < (len(l) - 1) or (screen_position == 0 and len(l) == 1)):
-        return render_list_line(l, screen_position, selection_index == screen_position),\
-               render_list_line(l, screen_position+1, selection_index == screen_position+1)
+def render_list(l, sp, sel):
+    if 0 <= sel < len(l) and (0 <= sp < (len(l) - 1) or (sp == 0 and len(l) == 1)):
+        return render_list_line(l, sp,  sel == sp),\
+               render_list_line(l, sp+1, sel == sp+1)
     else:
         return 'List Error!', ''
 
 
-def next_selection_index(l):
-    global selection_index
-    return (selection_index+1) % len(l)
+def next_selection_index(state, l):
+    return (state["selection_index"]+1) % len(l)
 
 
-def prev_selection_index(l):
-    global selection_index
-    return (selection_index-1) % len(l)
+def prev_selection_index(state, l):
+    return (state["selection_index"]-1) % len(l)
 
 
-def updated_screen_position(l):
-    global selection_index, screen_position
-    if screen_position > selection_index:
-        return selection_index
-    elif screen_position+1 < selection_index:
-        return selection_index - 1
+def updated_screen_position(state):
+    if state["screen_position"] > state["selection_index"]:
+        return state["selection_index"]
+    elif state["screen_position"]+1 < state["selection_index"]:
+        return state["selection_index"] - 1
     else:
-        return screen_position
+        return state["screen_position"]
 
 
-def active_item():
-    global path
+def active_item(state):
     context = menu()
-    for i in path:
+    for i in state["path"]:
         if 'submenu' in context and 0 <= i < len(context['submenu']):
             context = context['submenu'][i]
         else:
@@ -149,96 +136,133 @@ def active_item():
     return context
 
 
-def selected_item():
-    global selection_index
-    ai = active_item()
+def selected_item(state):
+    ai = active_item(state)
     if 'submenu' in ai:
-        if 0 <= selection_index < len(ai['submenu']):
-            return ai['submenu'][selection_index]
+        if 0 <= state["selection_index"] < len(ai['submenu']):
+            return ai['submenu'][state["selection_index"]]
         else:
             return None
     else:
         return None
 
 
-def render_item(item):
+def render_item(state, item):
     if 'submenu' in item:
-        return render_list(item['submenu'])
-    elif 'renderer' in item:
-        return item['renderer']()
+        return render_list(item['submenu'], state["screen_position"], state["selection_index"])
     else:
         return "Render error", ""
 
 
 # MUTATIONS
-def go_up():
-    global selection_index, screen_position
-    ai = active_item()
+def go_up(state):
+    new_state = dict(state)
+    ai = active_item(state)
     if 'submenu' in ai:
-        selection_index = prev_selection_index(ai['submenu'])
-        screen_position = updated_screen_position(ai['submenu'])
+        new_state["selection_index"] = prev_selection_index(state, ai['submenu'])
+        new_state["screen_position"] = updated_screen_position(new_state)
+        return new_state
+    else:
+        return state
 
 
-def go_down():
-    global selection_index, screen_position
-    ai = active_item()
+def go_down(state):
+    new_state = dict(state)
+    ai = active_item(state)
     if 'submenu' in ai:
-        selection_index = next_selection_index(ai['submenu'])
-        screen_position = updated_screen_position(ai['submenu'])
+        new_state["selection_index"] = next_selection_index(state, ai['submenu'])
+        new_state["screen_position"] = updated_screen_position(new_state)
+        return new_state
+    else:
+        return state
 
 
-def go_back():
-    global path, selection_index, screen_position
-    if len(path) > 0:
-        path.pop()
-        selection_index = selection_index_stack.pop()
-        screen_position = screen_position_stack.pop()
+def go_back(state):
+    new_state = dict(state)
+    if len(state["path"]) > 0:
+        new_state["path"] = list(state["path"])
+        new_state["path"].pop()
+        new_state["selection_index_stack"] = list(state["selection_index_stack"])
+        new_state["selection_index"] = new_state["selection_index_stack"].pop()
+        new_state["screen_position_stack"] = list(state["screen_position_stack"])
+        new_state["screen_position"] = new_state["screen_position_stack"].pop()
+        return new_state
+    else:
+        return state
 
 
-def enter_selected_item():
-    global path, selection_index, screen_position
-    si = selected_item()
-    if 'submenu' in si or 'renderer' in si:
-        path.append(selection_index)
-        selection_index_stack.append(selection_index)
-        screen_position_stack.append(screen_position)
-        selection_index = 0
-        screen_position = 0
-    if 'action' in si:
-        si['action']()
+def enter_selected_item(state):
+    new_state = dict(state)
+    si = selected_item(state)
+    if 'submenu' in si:
+        new_state["path"] = list(state["path"])
+        new_state["path"].append(state["selection_index"])
+        new_state["selection_index_stack"] = list(state["selection_index_stack"])
+        new_state["selection_index_stack"].append(state["selection_index"])
+        new_state["screen_position_stack"] = list(state["screen_position_stack"])
+        new_state["screen_position_stack"].append(state["screen_position"])
+        new_state["selection_index"] = 0
+        new_state["screen_position"] = 0
+        return new_state
+    else:
+        return state
 
 
-def enter_item_by_number(n):
-    global selection_index, screen_position
-    ai = active_item()
+def enter_item_by_number(state, n):
+    new_state = dict(state)
+    ai = active_item(state)
     if 'submenu' in ai and 1 <= n <= len(ai['submenu']):
-        selection_index = n-1
-        screen_position = updated_screen_position(ai['submenu'])
-        enter_selected_item()
+        new_state["selection_index"] = n-1
+        new_state["screen_position"] = updated_screen_position(new_state)
+        return enter_selected_item(new_state)
+    else:
+        return state
+
+
+# INITIAL STATE
+def init_state():
+    return {
+        "selection_index": 0,
+        "screen_position": 0,
+        "selection_index_stack": [],
+        "screen_position_stack": [],
+        "path": [],
+    }
 
 
 # EVENT HANDLER
-def handle_event(event, inputs, outputs, settings):
-    global selection_index, screen_position
-    output_changes = {}
+def handle_event(event, inputs, state, settings):
+    new_state = dict(state)
     setting_changes = {}
-    messages = []
     log_entries = []
+    messages = []
 
     if event[0] == 'press':
         key = event[1]
         if key == 'A':
-            go_up()
+            new_state = go_up(state)
         elif key == 'D':
-            go_down()
+            new_state = go_down(state)
         elif key == 'B':
-            enter_selected_item()
+            new_state = enter_selected_item(state)
         elif key == 'C':
-            go_back()
+            new_state = go_back(state)
         elif str(key).isdigit():
-            enter_item_by_number(int(key))
+            new_state = enter_item_by_number(state, int(key))
 
-    output_changes['line1'], output_changes['line2'] = render_item(active_item())
+    return new_state, setting_changes, log_entries, messages
 
-    return output_changes, setting_changes, messages, log_entries
 
+def get_outputs(inputs, state, settings):
+    outputs = {
+        "relay1": False,
+        "relay2": False,
+        "relay3": False,
+        "alarm": False,
+        "line1": "",
+        "line2": "",
+    }
+
+    outputs['line1'], outputs['line2'] = render_item(state, active_item(state))
+
+    return outputs

@@ -23,58 +23,50 @@ from datetime import datetime
 
 SECONDS_BETWEEN_TESTS = 4
 
-first_run = True
-testing_relay = 1
-last_test_time = 0
-testing_print_cycle = False
+
+def init_state():
+    return {
+        "first_run": True,
+        "testing_relay": 1,
+        "last_test_time": 0,
+        "message": "",
+    }
 
 
-def handle_event(event, inputs, outputs, settings):
-    global testing_relay, last_test_time, testing_print_cycle, first_run
-    output_changes = {}
+def handle_event(event, inputs, state, settings):
+    new_state = dict(state)
     setting_changes = {}
-    messages = []
     log_entries = []
+    messages = []
 
     # Listen for time change events (which run once per second)
-    if event[0] == 'change' and event[1] == 'timestamp' and event[3] - last_test_time >= SECONDS_BETWEEN_TESTS:
+    if event[0] == 'change' and event[1] == 'timestamp':
         # this will run once, at the beginning
-        if first_run:
+        if state["first_run"]:
             log_entries.append("Initializing test... (if you see this multiples times, something is broken!)")
             log_entries.append("Testing messaging system...")
             log_entries.append("")
             messages.append("Messaging system test.")
             setting_changes['test_setting'] = True
-            first_run = False
+            new_state["first_run"] = False
         elif 'test_setting' not in settings:
             log_entries.append("WARNING: settings are not being saved correctly!!")
 
-        # reset timer
-        last_test_time = inputs['timestamp']
+        # see if it's time to change to a new relay/alarm
+        if event[3] - state["last_test_time"] >= SECONDS_BETWEEN_TESTS:
+            # reset timer
+            new_state["last_test_time"] = inputs['timestamp']
 
-        # turn off last relay / alarm
-        if testing_relay != 4:
-            output_changes['relay' + str(testing_relay)] = False
-        else:
-            output_changes['alarm'] = False
+            # go to next relay / alarm
+            new_state["testing_relay"] = state["testing_relay"] + 1
+            if new_state["testing_relay"] == 5:
+                new_state["testing_relay"] = 1
 
-        # go to next relay / alarm
-        testing_relay += 1
-        if testing_relay == 5:
-            testing_relay = 1
-
-        # turn on next relay / alarm
-        if testing_relay != 4:
-            output_changes['relay' + str(testing_relay)] = True
-        else:
-            output_changes['alarm'] = True
-
-        # update screen output
-        output_changes["line1"] = datetime.utcfromtimestamp(inputs["timestamp"]).strftime('%m/%d %H:%M:%S')
-        if testing_relay != 4:
-            output_changes["line2"] = "Testing Relay " + str(testing_relay)
-        else:
-            output_changes["line2"] = "Testing Alarm"
+            # update the message
+            if new_state["testing_relay"] != 4:
+                new_state["message"] = "Testing Relay " + str(new_state["testing_relay"])
+            else:
+                new_state["message"] = "Testing Alarm"
 
         # print status
         log_entries.append("Testing Raspberry PI Home Security System (should repeat every 2s):")
@@ -84,11 +76,43 @@ def handle_event(event, inputs, outputs, settings):
         log_entries.append("")
 
     elif event[0] == 'change' and event[1] != 'timestamp' and event[2] is not None:
-        output_changes["line1"] = str(event[1])
-        output_changes["line2"] = "Changed To " + str(event[3])
+        new_state["message"] = str(event[1]) + " is now " + str(event[3])
 
     elif event[0] == 'press':
-        output_changes["line2"] = "Pressed " + str(event[1])
+        new_state["message"] = "Pressed " + str(event[1])
 
-    return output_changes, setting_changes, messages, log_entries
+    return new_state, setting_changes, log_entries, messages
 
+
+def get_outputs(inputs, state, settings):
+    outputs = {
+        "relay1": False,
+        "relay2": False,
+        "relay3": False,
+        "alarm": False,
+        "line1": "",
+        "line2": "",
+    }
+
+    # turn on relay / alarm
+    if state["testing_relay"] != 4:
+        outputs['relay' + str(state["testing_relay"])] = True
+    else:
+        outputs['alarm'] = True
+
+    outputs["line1"] = datetime.utcfromtimestamp(inputs["timestamp"]).strftime('%m/%d %H:%M:%S')
+    if len(state["message"]) > 16:
+        msg = state["message"]
+        msg_words = msg.split()
+        line1 = ""
+        line2 = ""
+        while len(msg_words) > 0 and len(line1) + len(msg_words[-1]) + 1 <= 16:
+            line1 += msg_words.pop(0) + " "
+        while len(msg_words) > 0:
+            line2 += msg_words.pop(0) + " "
+        outputs["line1"] = line1
+        outputs["line2"] = line2
+    else:
+        outputs["line2"] = state["message"]
+
+    return outputs
