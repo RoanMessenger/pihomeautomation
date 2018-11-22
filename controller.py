@@ -4,7 +4,7 @@
 # entries as output
 #
 # INPUTS:
-# temp_outside
+# external_temps
 # temp_inside
 # humidity
 # gas

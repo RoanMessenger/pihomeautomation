@@ -3,7 +3,7 @@
 # and settings system found in main.py
 #
 # INPUTS:
-# temp_outside
+# external_temps
 # temp_inside
 # humidity
 # gas

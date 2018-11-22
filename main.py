@@ -3,7 +3,6 @@ import controller
 import test_controller
 import sys
 import RPi.GPIO as GPIO
-from max6675 import MAX6675, MAX6675Error
 import time
 from twilio.rest import Client 
 from gpiozero import DigitalInputDevice
@@ -11,6 +10,7 @@ import Adafruit_DHT
 import json
 import lcd
 import keypad
+from w1thermsensor import W1ThermSensor
 
 
 # INITIAL SETUP ---------------------------------------------------------------------
@@ -38,13 +38,6 @@ KEYPAD = keypad.Keypad(
 
 # initialize PIR
 GPIO.setup(settings["pir_pin"], GPIO.IN)
-
-# initialize thermocouple
-THERMOCOUPLE = MAX6675(
-    settings["max6675_cs_pin"],
-    settings["max6675_clock_pin"],
-    settings["max6675_data_pin"],
-    settings["max6675_units"])
 
 # initialize twilio
 TWILIO_CLIENT = Client(settings["twilio_account_sid"], settings["twilio_auth_token"])
@@ -82,11 +75,6 @@ DHT11_HUM = None
 
 
 # FUNCTIONS -------------------------------------------------------------------------
-def max6675_temp():
-    t = THERMOCOUPLE.get()
-    return t
-
-
 def is_motion():
     return GPIO.input(settings["pir_pin"]) == 1
 
@@ -128,15 +116,16 @@ old_inputs = {}
 inputs = {}
 while True:
     # read inputs
-    temp, hum = temp_hum_sensor()
+    temp_inside, hum = temp_hum_sensor()
+    external_temps = [s.get_temperature() for s in W1ThermSensor.get_available_sensors()]
     old_inputs = inputs
     inputs = {
-        "temp_outside":  max6675_temp(),
-        "temp_inside":   temp,
-        "humidity":      hum,
-        "gas":           gas_sensor(),
-        "motion":        is_motion(),
-        "timestamp":     int(time.time())}
+        "external_temps": external_temps,
+        "temp_inside":    temp_inside,
+        "humidity":       hum,
+        "gas":            gas_sensor(),
+        "motion":         is_motion(),
+        "timestamp":      int(time.time())}
 
     # for each change in inputs, generate event
     events = []
