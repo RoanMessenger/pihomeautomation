@@ -117,15 +117,16 @@ inputs = {}
 while True:
     # read inputs
     temp_inside, hum = temp_hum_sensor()
-    external_temps = [s.get_temperature() for s in W1ThermSensor.get_available_sensors()]
+    external_temps = {'external_temp_'+i: s.get_temperature() for (i, s) in W1ThermSensor.get_available_sensors()}
     old_inputs = inputs
     inputs = {
-        "external_temps": external_temps,
-        "temp_inside":    temp_inside,
-        "humidity":       hum,
-        "gas":            gas_sensor(),
-        "motion":         is_motion(),
-        "timestamp":      int(time.time())}
+        "external_temp_count": len(external_temps.keys()),
+        "temp_inside":         temp_inside,
+        "humidity":            hum,
+        "gas":                 gas_sensor(),
+        "motion":              is_motion(),
+        "timestamp":           int(time.time())}
+    inputs.update(external_temps)
 
     # for each change in inputs, generate event
     events = []

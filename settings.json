@@ -22,11 +22,6 @@
   "lcd_line_1": 128,
   "lcd_line_2": 192,
 
-  "max6675_cs_pin": 2,
-  "max6675_clock_pin": 3,
-  "max6675_data_pin": 4,
-  "max6675_units": "c",
-
   "gas_pin": 14,
   "dht_pin": 10,
   "twilio_account_sid": "",
@@ -37,5 +32,5 @@
   "relay1_pin": 21,
   "relay2_pin": 11,
   "relay3_pin": 13,
-  "relay4_pin": 15
+  "alarm_pin": 15
 }

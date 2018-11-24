@@ -8,7 +8,7 @@
     <style>
         .case {
             width: 400px;
-            height: 593px;
+            height: 600px;
             background: linear-gradient(to bottom right, #8c6529, #785115);
             border-top: 20px solid rgba(255,255,255,0.3);
             border-left: 20px solid rgba(255,255,255,0.3);
@@ -28,7 +28,7 @@
             border-left: 16px solid black;
             border-right: 16px solid black;
             margin: auto;
-            margin-top: 60px;
+            margin-top: 50px;
             padding: 2px 10px;
             padding-top: 4px;
             border-radius: 5px;
@@ -45,7 +45,7 @@
             width: 210px;
             height: 210px;
             margin: auto;
-            margin-top: 60px;
+            margin-top: 50px;
             table-layout: fixed;
             background: #404040;
             border-radius: 15px;
@@ -100,7 +100,7 @@
         }
         .inputs, .outputs {
             width: 50%;
-            margin-top: 40px;
+            margin-top: 30px;
             color: rgba(255, 255, 255, 0.4);
             text-shadow: -1px -1px 0 rgba(0,0,0,0.5);
         }
@@ -112,7 +112,7 @@
             float: left;
         }
         .inputs > div, .outputs > div {
-            padding: 8px;
+            padding: 5px;
         }
         .inputs > div {
             padding-left: 12px;
@@ -173,25 +173,25 @@
             </table>
             <div class="inputs">
                 <div>
+                    <span class="button" @click="lowerHumidity">-</span>
+                    <span class="value">{{humidity}}</span>
+                    <span class="button" @click="raiseHumidity">+</span>
+                    &nbsp;
+                    Humidity
+                </div>
+                <div>
                     <span class="button" @click="lowerTempInside">-</span>
                     <span class="value">{{tempInside}}</span>
                     <span class="button" @click="raiseTempInside">+</span>
                     &nbsp;
                     Inside Temp
                 </div>
-                <div>
-                    <span class="button" @click="lowerTempOutside">-</span>
-                    <span class="value">{{tempOutside}}</span>
-                    <span class="button" @click="raiseTempOutside">+</span>
+                <div v-for="(temp, index) in externalTemps">
+                    <span class="button" @click="lowerExternalTemp(index)">-</span>
+                    <span class="value">{{temp}}</span>
+                    <span class="button" @click="raiseExternalTemp(index)">+</span>
                     &nbsp;
-                    Outside Temp
-                </div>
-                <div>
-                    <span class="button" @click="lowerHumidity">-</span>
-                    <span class="value">{{humidity}}</span>
-                    <span class="button" @click="raiseHumidity">+</span>
-                    &nbsp;
-                    Humidity
+                    Ext Temp {{index+1}}
                 </div>
                 <div>
                     <div class="button" @click="toggleMotion">
@@ -241,8 +241,8 @@
                 gas: false,
                 motion: false,
                 tempInside: 20.0,
-                tempOutside: 10.0,
                 humidity: 50.0,
+                externalTemps: [10.0, 10.0, 10.0],
 
                 //constants
                 keys: [
@@ -298,7 +298,7 @@
                 gas(val) { this.sendInputs(); },
                 motion(val) { this.sendInputs(); },
                 tempInside(val) { this.sendInputs(); },
-                tempOutside(val) { this.sendInputs(); },
+                externalTemps(val) { this.sendInputs(); },
                 humidity(val) { this.sendInputs(); },
             },
             methods: {
@@ -307,9 +307,13 @@
                         gas: this.gas,
                         motion: this.motion,
                         temp_inside: this.tempInside,
-                        temp_outside: this.tempOutside,
                         humidity: this.humidity,
                         timestamp: Math.floor(Date.now() / 1000),
+                        ...this.externalTemps.reduce((m, temp, i) => ({
+                            ...m,
+                            ['external_temp_'+i]: temp
+                        }), {}),
+                        external_temp_count: this.externalTemps.length,
                     });
                 },
 
@@ -317,8 +321,12 @@
                 press(key) { this.socket.send(key); },
                 raiseTempInside() { this.tempInside += this.tempAdjustment },
                 lowerTempInside() { this.tempInside -= this.tempAdjustment },
-                raiseTempOutside() { this.tempOutside += this.tempAdjustment },
-                lowerTempOutside() { this.tempOutside -= this.tempAdjustment },
+                raiseExternalTemp(index) {
+                    this.externalTemps = this.externalTemps.map((temp, i) => i==index ? temp + this.tempAdjustment : temp);
+                },
+                lowerExternalTemp(index) {
+                    this.externalTemps = this.externalTemps.map((temp, i) => i==index ? temp - this.tempAdjustment : temp);
+                },
                 raiseHumidity() { this.humidity += this.humidityAdjustment },
                 lowerHumidity() { this.humidity -= this.humidityAdjustment },
                 toggleMotion() { this.motion = !this.motion; },
