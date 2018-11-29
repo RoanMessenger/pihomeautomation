@@ -24,13 +24,101 @@
 
   "gas_pin": 14,
   "dht_pin": 10,
+
   "twilio_account_sid": "",
   "twilio_auth_token": "",
   "twilio_from": "",
-  "twilio_to": "",
 
   "relay1_pin": 21,
   "relay2_pin": 11,
   "relay3_pin": 13,
-  "alarm_pin": 15
+  "alarm_pin": 15,
+
+  "relay1_mode": "off",
+  "relay2_mode": "off",
+  "relay3_mode": "off",
+  "alarm_active": false,
+
+  "alert_numbers": [
+    {
+      "number": "5555555555",
+      "alarm": false,
+      "gas": false,
+      "temp": false
+    }
+  ],
+
+  "alarm": {
+    "enabled": false,
+    "code": "1234",
+    "time": 10,
+    "time_choices": [
+      {
+        "name": "10 Seconds",
+        "seconds": 10
+      },
+      {
+        "name": "30 Seconds",
+        "seconds": 30
+      },
+      {
+        "name": "1 Minute",
+        "seconds": 60
+      },
+      {
+        "name": "2 Minutes",
+        "seconds": 120
+      }
+    ]
+  },
+
+  "relay_schedules": [
+    {
+      "relay": 1,
+      "on_ranges": [
+        {
+          "start": 480,
+          "end": 840
+        },
+        {
+          "start": 0,
+          "end": 720
+        }
+      ]
+    },
+    {
+      "relay": 2,
+      "on_ranges": []
+    },
+    {
+      "relay": 3,
+      "on_ranges": []
+    }
+  ],
+
+  "relay_triggers": [
+    {
+      "relay": 1,
+      "triggers": [
+        {
+          "input": "temp_inside",
+          "comparison": ">",
+          "value": 32
+        },
+        {
+          "input": "motion",
+          "comparison": "=",
+          "value": true
+        }
+      ]
+    },
+    {
+      "relay": 2,
+      "triggers": [ ]
+    },
+    {
+      "relay": 3,
+      "triggers": [ ]
+    }
+  ]
 }

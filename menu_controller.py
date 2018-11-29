@@ -38,11 +38,14 @@ def render_list_line(l, i, sel):
 
 
 def render_list(l, sp, sel):
-    if 0 <= sel < len(l) and (0 <= sp < (len(l) - 1) or (sp == 0 and len(l) == 1)):
-        return render_list_line(l, sp,  sel == sp),\
-               render_list_line(l, sp+1, sel == sp+1)
+    if len(l) > 0:
+        if 0 <= sel < len(l) and (0 <= sp < (len(l) - 1) or (sp == 0 and len(l) == 1)):
+            return render_list_line(l, sp,  sel == sp),\
+                   render_list_line(l, sp+1, sel == sp+1)
+        else:
+            return 'List Error!', ''
     else:
-        return 'List Error!', ''
+        return '(Nothing Here)', ''
 
 
 def next_selection_index(state, l):
@@ -127,7 +130,7 @@ def handle_event(event, inputs, state, settings, context):
                 i = 9
             if i < len(context):
                 new_state = go_to(state, context, i)
-                launch = selected_item(state, context)
+                launch = selected_item(new_state, context)
 
     return new_state, setting_changes, log_entries, messages, done, launch
 

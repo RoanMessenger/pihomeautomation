@@ -260,14 +260,14 @@
                     if (this.line1.length == 0) {
                         return '&nbsp;';
                     } else {
-                        return this.line1.replace(' ', '&nbsp;');
+                        return this.line1.replace(/ /g, '&nbsp;');
                     }
                 },
                 line2_html() {
                     if (this.line2.length == 0) {
                         return '&nbsp;';
                     } else {
-                        return this.line2.replace(' ', '&nbsp;');
+                        return this.line2.replace(/ /g, '&nbsp;');
                     }
                 },
             },

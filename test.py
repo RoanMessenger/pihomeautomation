@@ -79,7 +79,7 @@ def handle_message(msg):
 
 
 # open web browser to test client
-webbrowser.open('http://127.0.0.1:5000')
+# webbrowser.open('http://127.0.0.1:5000')
 print("Navigate to http://127.0.0.1:5000/ to access testing interface.")
 
 # start server
