@@ -21,6 +21,7 @@
 # alarm
 
 import menu_controller
+import screensaver_controller
 
 
 def cycle_relay_mode(n):
@@ -38,11 +39,11 @@ def cycle_relay_mode(n):
 def relay_listing(n, settings):
     key = 'relay' + str(n) + '_mode'
     if key not in settings or settings[key] == 'off':
-        return "[OFF ] Relay "+str(n)
+        return "Relay "+str(n)+": OFF"
     elif settings[key] == 'auto':
-        return "[AUTO] Relay "+str(n)
+        return "Relay "+str(n)+": AUTO"
     else:
-        return "[ON  ] Relay "+str(n)
+        return "Relay "+str(n)+": ON"
 
 
 def main_menu(settings):
@@ -111,6 +112,7 @@ def relay_triggers_menu(rt):
 
 def programs(inputs, state, settings):
     progs = {
+        "screensaver": (screensaver_controller, "main_menu"),
         "main_menu": (menu_controller, main_menu(settings)),
         "network_settings": (menu_controller, [
             ("Available Networks", "available_networks"),
@@ -188,6 +190,8 @@ def quit_active_prog(state):
 def init_state():
     return {
         'stack': [],
+        'last_user_input': 0,
+        'first_run': True,
     }
 
 
@@ -197,22 +201,45 @@ def handle_event(event, inputs, state, settings):
     setting_changes = {}
     log_entries = []
     messages = []
-    print(state)
+    timed_out = False
 
-    if len(state['stack']) == 0:
-        # stack empty, launch main menu
-        new_state, _ = launch_prog(inputs, state, settings, 'main_menu')
-    else:
-        frame = state['stack'][-1]
-        program = programs(inputs, state, settings)[frame[0]]
-        new_prog_state, setting_changes, log_entries, messages, done, launch =\
-            program[0].handle_event(event, inputs, frame[1], settings, program[1])
-        new_state['stack'][-1] = (frame[0], new_prog_state)
-        if done:
-            new_state = quit_active_prog(state)
-        if launch:
-            new_state, other_setting_changes = launch_prog(inputs, state, settings, launch)
-            setting_changes.update(other_setting_changes)
+    # keep track of menu timeout status
+    if event[0] == 'press':
+        # user input received, update time
+        new_state['last_user_input'] = inputs['timestamp']
+    elif event[0] == 'change' and event[1] == 'timestamp' and event[3] - state['last_user_input'] > settings['menu_timeout_seconds']:
+        # we have exceeded the menu timeout, we need to clear the stack
+        timed_out = True
+
+    # if stack is empty, or we've timed out, clear stack and launch screensaver
+    if len(state['stack']) == 0 or (timed_out and len(state['stack']) > 1):
+        # stack empty, launch screen saver
+        new_state["stack"] = []
+        new_state, _ = launch_prog(inputs, new_state, settings, 'screensaver')
+
+    frame = new_state['stack'][-1]
+    program = programs(inputs, new_state, settings)[frame[0]]
+    new_prog_state, setting_changes, log_entries, messages, done, launch =\
+        program[0].handle_event(event, inputs, frame[1], settings, program[1])
+    new_state['stack'][-1] = (frame[0], new_prog_state)
+    if done:
+        new_state = quit_active_prog(new_state)
+    if launch:
+        new_state, other_setting_changes = launch_prog(inputs, new_state, settings, launch)
+        setting_changes.update(other_setting_changes)
+
+    # keep track of last motion detected and last gas sensor reading times
+    if inputs['motion']:
+        # motion sensor is active, record this as last time it went off
+        setting_changes['last_motion'] = inputs['timestamp']
+    if inputs['gas']:
+        # gas sensor is active, record this as last time it went off
+        setting_changes['last_gas'] = inputs['timestamp']
+
+    # make a note of when we booted
+    if state['first_run']:
+        setting_changes['running_since'] = inputs['timestamp']
+        new_state['first_run'] = False
 
     return new_state, setting_changes, log_entries, messages
 

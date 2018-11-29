@@ -20,11 +20,6 @@
 #
 # CONTEXT:
 # list of 2-tuples: (name, value)
-#
-# RETURN VALUE:
-# None -> do nothing
-# str  -> select item
-# True -> exit
 
 
 # COMPUTED VALUES

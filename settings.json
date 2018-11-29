@@ -120,5 +120,7 @@
       "relay": 3,
       "triggers": [ ]
     }
-  ]
+  ],
+
+  "menu_timeout_seconds": 120
 }
