@@ -154,7 +154,7 @@ while True:
                 settings[setting] = setting_changes[setting]
                 log('Setting "' + setting + '" changed to ' + str(setting_changes[setting]))
             if not testing:
-                with open('settings.json', 'r') as f:
+                with open('settings.json', 'w') as f:
                     json.dump(settings, f, sort_keys=True, indent=4)
 
         # handle log entries
