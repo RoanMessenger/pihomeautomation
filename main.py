@@ -117,7 +117,7 @@ inputs = {}
 while True:
     # read inputs
     temp_inside, hum = temp_hum_sensor()
-    external_temps = {'external_temp_'+i: s.get_temperature() for (i, s) in W1ThermSensor.get_available_sensors()}
+    #external_temps = {'external_temp_'+i: s.get_temperature() for (i, s) in W1ThermSensor.get_available_sensors()}
     old_inputs = inputs
     inputs = {
         "external_temp_count": len(external_temps.keys()),
