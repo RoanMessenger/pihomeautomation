@@ -2,8 +2,6 @@
 # This creates series of screens showing the state of the system which rotate automatically
 #
 # INPUTS:
-# external_temp_count
-# external_temp_1, 2, 3...
 # temp_inside
 # humidity
 # gas

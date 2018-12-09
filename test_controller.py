@@ -3,8 +3,6 @@
 # and settings system found in main.py
 #
 # INPUTS:
-# external_temp_count
-# external_temp_1, 2, 3...
 # temp_inside
 # humidity
 # gas
