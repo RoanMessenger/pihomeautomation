@@ -163,6 +163,7 @@ while True:
 
     # write outputs
     outputs = cont.get_outputs(inputs, state, settings)
+    print(outputs)
     LCD.write_both(outputs['line1'], outputs['line2'])
     for i in range(1, 4):
         x = "relay" + str(i) + "_pin"
