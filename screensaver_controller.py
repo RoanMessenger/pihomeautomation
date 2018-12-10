@@ -11,10 +11,6 @@
 # OUTPUTS:
 # line1
 # line2
-# relay1
-# relay2
-# relay3
-# alarm
 #
 # CONTEXT:
 # str -> program to run when any key is pressed
@@ -63,10 +59,6 @@ def handle_event(event, inputs, state, settings, context):
 
 def get_outputs(inputs, state, settings, context):
     outputs = {
-        "relay1":      False,
-        "relay2":      False,
-        "relay3":      False,
-        "alarm":       False,
         "line1":       datetime.utcfromtimestamp(inputs["timestamp"]).strftime('%m/%d %H:%M:%S'),
         "line2":       "",
     }

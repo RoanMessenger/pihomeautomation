@@ -13,10 +13,6 @@
 # OUTPUTS:
 # line1
 # line2
-# relay1
-# relay2
-# relay3
-# alarm
 #
 # CONTEXT:
 # list of 2-tuples: (name, value)
@@ -132,10 +128,6 @@ def handle_event(event, inputs, state, settings, context):
 
 def get_outputs(inputs, state, settings, context):
     outputs = {
-        "relay1":      False,
-        "relay2":      False,
-        "relay3":      False,
-        "alarm":       False,
         "line1":       "",
         "line2":       "",
     }

@@ -113,6 +113,7 @@ def relay_triggers_menu(rt):
 
 def programs(inputs, state, settings):
     progs = {
+        "gas_alert": (alert_message_controller, ("Warning:", "GAS DETECTED!")),
         "screensaver": (screensaver_controller, "main_menu"),
         "main_menu": (menu_controller, main_menu(settings)),
         "network_settings": (menu_controller, [
@@ -212,12 +213,17 @@ def handle_event(event, inputs, state, settings):
         # we have exceeded the menu timeout, we need to clear the stack
         timed_out = True
 
+    # if gas sensor on, push alert onto stack
+    if event[0] == 'change' and event[1] == 'gas' and event[3]:
+        new_state, _ = launch_prog(inputs, new_state, settings, 'gas_alert')
+
     # if stack is empty, or we've timed out, clear stack and launch screensaver
-    if len(state['stack']) == 0 or (timed_out and len(state['stack']) > 1):
+    elif len(state['stack']) == 0 or (timed_out and len(state['stack']) > 1):
         # stack empty, launch screen saver
         new_state["stack"] = []
         new_state, _ = launch_prog(inputs, new_state, settings, 'screensaver')
 
+    # HANDLE PROGRAM STACK ---------------------------------------------------------------------------------------------
     frame = new_state['stack'][-1]
     program = programs(inputs, new_state, settings)[frame[0]]
     new_prog_state, setting_changes, log_entries, messages, done, launch =\
@@ -228,6 +234,7 @@ def handle_event(event, inputs, state, settings):
     if launch:
         new_state, other_setting_changes = launch_prog(inputs, new_state, settings, launch)
         setting_changes.update(other_setting_changes)
+    # ------------------------------------------------------------------------------------------------------------------
 
     # keep track of last motion detected and last gas sensor reading times
     if inputs['motion']:

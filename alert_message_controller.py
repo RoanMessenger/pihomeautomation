@@ -1,5 +1,5 @@
 # ALERT MESSAGE CONTROLLER
-# This creates a warning message and activates the buzzer or alarm, which can be dismissed by pressing any key
+# This creates a message on the screen, along with an alarm which can be dismissed by any key
 #
 # INPUTS:
 # temp_inside
@@ -11,20 +11,17 @@
 # OUTPUTS:
 # line1
 # line2
-# relay1
-# relay2
-# relay3
-# alarm
 #
 # CONTEXT:
-# str -> message to display
-
-from datetime import datetime
+# (str, str) -> lines 1 and 2 of message to display
 
 
 # INITIAL STATE
 def init_state():
-    return { }
+    return {
+        "first_run": True,
+        "old_relay_mode": None,
+    }
 
 
 # EVENT HANDLER
@@ -36,8 +33,14 @@ def handle_event(event, inputs, state, settings, context):
     done = False
     launch = None
 
-    if event[0] == 'press':
+    if state["first_run"]:
+        new_state["first_run"] = False
+        new_state["old_relay_mode"] = settings["relay2_mode"]
+        setting_changes["relay2_mode"] = "on"
+
+    elif event[0] == 'press':
         # launch the main menu if any key is pressed
+        setting_changes["relay2_mode"] = state["old_relay_mode"]
         done = True
 
     return new_state, setting_changes, log_entries, messages, done, launch
@@ -45,12 +48,8 @@ def handle_event(event, inputs, state, settings, context):
 
 def get_outputs(inputs, state, settings, context):
     outputs = {
-        "relay1":      False,
-        "relay2":      False,
-        "relay3":      False,
-        "alarm":       True,
-        "line1":       "Warning!",
-        "line2":       context
+        "line1":       context[0],
+        "line2":       context[1]
     }
 
     return outputs
