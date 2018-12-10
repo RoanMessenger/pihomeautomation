@@ -5,10 +5,10 @@
     [7,8,9,"C"],
     ["*",0,"#","D"]
   ],
-  "keypad_row_pins": [26,16,20,21],
-  "keypad_col_pins": [5,6,13,19],
+  "keypad_col_pins": [21,20,16,26],
+  "keypad_row_pins": [19,13,6,5],
 
-  "pir_pin": 23,
+  "pir_pin": 11,
 
   "lcd_rs": 7,
   "lcd_e": 8,
@@ -29,10 +29,10 @@
   "twilio_auth_token": "",
   "twilio_from": "",
 
-  "relay1_pin": 21,
-  "relay2_pin": 11,
-  "relay3_pin": 13,
-  "alarm_pin": 15,
+  "relay1_pin": 9,
+  "relay2_pin": 17,
+  "relay3_pin": 22,
+  "alarm_pin": 27,
 
   "relay1_mode": "off",
   "relay2_mode": "off",
