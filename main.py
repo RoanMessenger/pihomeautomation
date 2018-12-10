@@ -4,7 +4,7 @@ import test_controller
 import sys
 import RPi.GPIO as GPIO
 import time
-from twilio.rest import Client 
+# from twilio.rest import Client
 from gpiozero import DigitalInputDevice
 import Adafruit_DHT
 import json
@@ -37,7 +37,7 @@ KEYPAD = keypad.Keypad(
 GPIO.setup(settings["pir_pin"], GPIO.IN)
 
 # initialize twilio
-TWILIO_CLIENT = Client(settings["twilio_account_sid"], settings["twilio_auth_token"])
+# TWILIO_CLIENT = Client(settings["twilio_account_sid"], settings["twilio_auth_token"])
 
 # initialize gas sensor
 GAS_SENSOR = DigitalInputDevice(settings["gas_pin"])
@@ -84,11 +84,11 @@ def log(m):
         print(now + m)
 
 
-def send_message(m):
-    try:
-        TWILIO_CLIENT.messages.create(from_=settings["twilio_from"], to=settings["twilio_to"], body=m)
-    except:
-        log("Error sending message over Twilio!")
+# def send_message(m):
+    # try:
+        # TWILIO_CLIENT.messages.create(from_=settings["twilio_from"], to=settings["twilio_to"], body=m)
+    # except:
+        # log("Error sending message over Twilio!")
 
 
 def temp_hum_sensor():
@@ -157,9 +157,9 @@ while True:
             log(entry)
 
         # send messages
-        for message in messages:
-            send_message(message)
-            log('Sent message: ' + str(message))
+        # for message in messages:
+            # send_message(message)
+            # log('Sent message: ' + str(message))
 
     # write outputs
     outputs = cont.get_outputs(inputs, state, settings)
