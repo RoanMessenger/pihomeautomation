@@ -17,7 +17,6 @@ class LCD:
         self.line_2 = line_2
 
         GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BCM)
         GPIO.setup(e, GPIO.OUT)
         GPIO.setup(rs, GPIO.OUT)
         GPIO.setup(d4, GPIO.OUT)

@@ -13,6 +13,8 @@ import keypad
 
 # INITIAL SETUP ---------------------------------------------------------------------
 print("Starting up...")
+GPIO.setmode(GPIO.BCM)
+
 # check if we're in testing mode
 testing = False
 if len(sys.argv) == 2:
@@ -24,9 +26,6 @@ state = cont.init_state()
 # load settings
 with open('settings.json', 'r') as f:
     settings = json.load(f)
-
-# reset all GPIO
-GPIO.cleanup()
 
 # initialize keypad
 KEYPAD = keypad.Keypad(

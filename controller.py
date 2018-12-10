@@ -22,6 +22,7 @@
 
 import menu_controller
 import screensaver_controller
+import alert_message_controller
 
 
 def cycle_relay_mode(n):
