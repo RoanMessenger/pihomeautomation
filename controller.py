@@ -4,9 +4,8 @@
 # entries as output
 #
 # INPUTS:
-# external_temp_count
-# external_temp_1, 2, 3...
 # temp_inside
+# temp_outside
 # humidity
 # gas
 # motion

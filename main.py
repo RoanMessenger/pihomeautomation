@@ -10,6 +10,7 @@ import Adafruit_DHT
 import json
 import lcd
 import keypad
+from w1thermsensor import W1ThermSensor
 
 # INITIAL SETUP ---------------------------------------------------------------------
 print("Starting up...")
@@ -22,6 +23,10 @@ if len(sys.argv) == 2:
         testing = True
 cont = test_controller if testing else controller
 state = cont.init_state()
+
+# setup DS18B20 external temp sensor
+ext_temp_sensor = W1ThermSensor()
+ext_temp = None
 
 # load settings
 with open('settings.json', 'r') as f:
@@ -124,6 +129,7 @@ while True:
     # read new inputs if no keys have been pressed
     if len(events) == 0 and time.time() - last_temp_hum_read > settings["temp_hum_period"]:
         temp_hum_sensor()
+        ext_temp = ext_temp_sensor.get_temperature()
         last_temp_hum_read = time.time()
     elif len(events) > 0:
         last_temp_hum_read = time.time()
@@ -132,6 +138,7 @@ while True:
     inputs = {
         "temp_inside":         DHT11_TEMP,
         "humidity":            DHT11_HUM,
+        "temp_outside":        ext_temp,
         "gas":                 gas_sensor(),
         "motion":              is_motion(),
         "timestamp":           int(time.time())}

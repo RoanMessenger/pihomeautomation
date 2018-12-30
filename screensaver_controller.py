@@ -3,6 +3,7 @@
 #
 # INPUTS:
 # temp_inside
+# temp_outside
 # humidity
 # gas
 # motion
@@ -19,7 +20,7 @@ from datetime import datetime
 
 
 def next_screen_index(i):
-    return (i+1) % 5
+    return (i+1) % 6
 
 
 # INITIAL STATE
@@ -84,6 +85,8 @@ def get_outputs(inputs, state, settings, context):
     elif state['screen_index'] == 3:
         outputs['line2'] = "Temp Inside: " + str(inputs['temp_inside'])
     elif state['screen_index'] == 4:
+        outputs['line2'] = "Temp Outside: " + str(inputs['temp_outside'])
+    elif state['screen_index'] == 5:
         outputs['line2'] = "Humidity: " + str(inputs['humidity'])
 
     return outputs

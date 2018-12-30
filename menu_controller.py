@@ -2,9 +2,8 @@
 # This creates a menu with a list of menu items, with title and
 #
 # INPUTS:
-# external_temp_count
-# external_temp_1, 2, 3...
 # temp_inside
+# temp_outside
 # humidity
 # gas
 # motion

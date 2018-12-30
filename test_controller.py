@@ -4,6 +4,7 @@
 #
 # INPUTS:
 # temp_inside
+# temp_outside
 # humidity
 # gas
 # motion

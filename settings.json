@@ -73,7 +73,7 @@
         5
     ], 
     "last_gas": 1546205883, 
-    "last_motion": 1546205824, 
+    "last_motion": 1546210204, 
     "lcd_chars": 16, 
     "lcd_chr": true, 
     "lcd_cmd": false, 
@@ -87,9 +87,9 @@
     "lcd_rs": 7, 
     "menu_timeout_seconds": 120, 
     "pir_pin": 11, 
-    "relay1_mode": "off", 
+    "relay1_mode": "on", 
     "relay1_pin": 9, 
-    "relay2_mode": "off", 
+    "relay2_mode": "on", 
     "relay2_pin": 17, 
     "relay3_mode": "off", 
     "relay3_pin": 22, 
@@ -141,7 +141,7 @@
             "triggers": []
         }
     ], 
-    "running_since": 1546206490, 
+    "running_since": 1546210034, 
     "screensaver_duration": 3, 
     "temp_hum_period": 15.0, 
     "twilio_account_sid": "", 
