@@ -111,19 +111,32 @@ if testing:
     log("(testing mode)")
 old_inputs = {}
 inputs = {}
+last_temp_hum_read = 0.0
 while True:
-    # read inputs
-    temp_inside, hum = temp_hum_sensor()
+    events = []
+
+    # if a key is being pressed, generate an event for it
+    keys = KEYPAD.get_keys()
+    KEYPAD.clear_keys()
+    for key in keys:
+        events.append(("press", key))
+
+    # read new inputs if no keys have been pressed
+    if len(events) == 0 and time.time() - last_temp_hum_read > settings["temp_hum_period"]:
+        temp_hum_sensor()
+        last_temp_hum_read = time.time()
+    elif len(events) > 0:
+        last_temp_hum_read = time.time()
+
     old_inputs = inputs
     inputs = {
-        "temp_inside":         temp_inside,
-        "humidity":            hum,
+        "temp_inside":         DHT11_TEMP,
+        "humidity":            DHT11_HUM,
         "gas":                 gas_sensor(),
         "motion":              is_motion(),
         "timestamp":           int(time.time())}
 
     # for each change in inputs, generate event
-    events = []
     for i in inputs:
         if i not in old_inputs:
             events.append(("change", i, None, inputs[i]))
@@ -132,12 +145,6 @@ while True:
     for i in old_inputs:
         if i not in inputs:
             events.append(("change", i, old_inputs[i], None))
-
-    # if a key is being pressed, generate an event for it
-    keys = KEYPAD.get_keys()
-    KEYPAD.clear_keys()
-    for key in keys:
-        events.append(("press", key))
 
     # call controller for each event
     for e in events:
@@ -163,7 +170,6 @@ while True:
 
     # write outputs
     outputs = cont.get_outputs(inputs, state, settings)
-    print(outputs)
     LCD.write_both(outputs['line1'], outputs['line2'])
     for i in range(1, 4):
         x = "relay" + str(i) + "_pin"

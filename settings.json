@@ -1,126 +1,150 @@
 {
-  "keypad_characters": [
-    [1,2,3,"A"],
-    [4,5,6,"B"],
-    [7,8,9,"C"],
-    ["*",0,"#","D"]
-  ],
-  "keypad_col_pins": [21,20,16,26],
-  "keypad_row_pins": [19,13,6,5],
-
-  "pir_pin": 11,
-
-  "lcd_rs": 7,
-  "lcd_e": 8,
-  "lcd_d4": 25,
-  "lcd_d5": 24,
-  "lcd_d6": 23,
-  "lcd_d7": 18,
-  "lcd_chr": true,
-  "lcd_cmd": false,
-  "lcd_chars": 16,
-  "lcd_line_1": 128,
-  "lcd_line_2": 192,
-
-  "gas_pin": 14,
-  "dht_pin": 10,
-
-  "twilio_account_sid": "",
-  "twilio_auth_token": "",
-  "twilio_from": "",
-
-  "relay1_pin": 9,
-  "relay2_pin": 17,
-  "relay3_pin": 22,
-  "alarm_pin": 27,
-
-  "relay1_mode": "off",
-  "relay2_mode": "off",
-  "relay3_mode": "off",
-  "alarm_active": false,
-
-  "alert_numbers": [
-    {
-      "number": "5555555555",
-      "alarm": false,
-      "gas": false,
-      "temp": false
-    }
-  ],
-
-  "alarm": {
-    "enabled": false,
-    "code": "1234",
-    "time": 10,
-    "time_choices": [
-      {
-        "name": "10 Seconds",
-        "seconds": 10
-      },
-      {
-        "name": "30 Seconds",
-        "seconds": 30
-      },
-      {
-        "name": "1 Minute",
-        "seconds": 60
-      },
-      {
-        "name": "2 Minutes",
-        "seconds": 120
-      }
-    ]
-  },
-
-  "relay_schedules": [
-    {
-      "relay": 1,
-      "on_ranges": [
+    "alarm": {
+        "code": "1234", 
+        "enabled": false, 
+        "time": 10, 
+        "time_choices": [
+            {
+                "name": "10 Seconds", 
+                "seconds": 10
+            }, 
+            {
+                "name": "30 Seconds", 
+                "seconds": 30
+            }, 
+            {
+                "name": "1 Minute", 
+                "seconds": 60
+            }, 
+            {
+                "name": "2 Minutes", 
+                "seconds": 120
+            }
+        ]
+    }, 
+    "alarm_active": false, 
+    "alarm_pin": 27, 
+    "alert_numbers": [
         {
-          "start": 480,
-          "end": 840
-        },
-        {
-          "start": 0,
-          "end": 720
+            "alarm": false, 
+            "gas": false, 
+            "number": "5555555555", 
+            "temp": false
         }
-      ]
-    },
-    {
-      "relay": 2,
-      "on_ranges": []
-    },
-    {
-      "relay": 3,
-      "on_ranges": []
-    }
-  ],
-
-  "relay_triggers": [
-    {
-      "relay": 1,
-      "triggers": [
+    ], 
+    "dht_pin": 10, 
+    "gas_pin": 14, 
+    "keypad_characters": [
+        [
+            1, 
+            2, 
+            3, 
+            "A"
+        ], 
+        [
+            4, 
+            5, 
+            6, 
+            "B"
+        ], 
+        [
+            7, 
+            8, 
+            9, 
+            "C"
+        ], 
+        [
+            "*", 
+            0, 
+            "#", 
+            "D"
+        ]
+    ], 
+    "keypad_col_pins": [
+        21, 
+        20, 
+        16, 
+        26
+    ], 
+    "keypad_row_pins": [
+        19, 
+        13, 
+        6, 
+        5
+    ], 
+    "last_gas": 1546205883, 
+    "last_motion": 1546205824, 
+    "lcd_chars": 16, 
+    "lcd_chr": true, 
+    "lcd_cmd": false, 
+    "lcd_d4": 25, 
+    "lcd_d5": 24, 
+    "lcd_d6": 23, 
+    "lcd_d7": 18, 
+    "lcd_e": 8, 
+    "lcd_line_1": 128, 
+    "lcd_line_2": 192, 
+    "lcd_rs": 7, 
+    "menu_timeout_seconds": 120, 
+    "pir_pin": 11, 
+    "relay1_mode": "off", 
+    "relay1_pin": 9, 
+    "relay2_mode": "off", 
+    "relay2_pin": 17, 
+    "relay3_mode": "off", 
+    "relay3_pin": 22, 
+    "relay_schedules": [
         {
-          "input": "temp_inside",
-          "comparison": ">",
-          "value": 32
-        },
+            "on_ranges": [
+                {
+                    "end": 840, 
+                    "start": 480
+                }, 
+                {
+                    "end": 720, 
+                    "start": 0
+                }
+            ], 
+            "relay": 1
+        }, 
         {
-          "input": "motion",
-          "comparison": "=",
-          "value": true
+            "on_ranges": [], 
+            "relay": 2
+        }, 
+        {
+            "on_ranges": [], 
+            "relay": 3
         }
-      ]
-    },
-    {
-      "relay": 2,
-      "triggers": [ ]
-    },
-    {
-      "relay": 3,
-      "triggers": [ ]
-    }
-  ],
-
-  "menu_timeout_seconds": 120
+    ], 
+    "relay_triggers": [
+        {
+            "relay": 1, 
+            "triggers": [
+                {
+                    "comparison": ">", 
+                    "input": "temp_inside", 
+                    "value": 32
+                }, 
+                {
+                    "comparison": "=", 
+                    "input": "motion", 
+                    "value": true
+                }
+            ]
+        }, 
+        {
+            "relay": 2, 
+            "triggers": []
+        }, 
+        {
+            "relay": 3, 
+            "triggers": []
+        }
+    ], 
+    "running_since": 1546206490, 
+    "screensaver_duration": 3, 
+    "temp_hum_period": 15.0, 
+    "twilio_account_sid": "", 
+    "twilio_auth_token": "", 
+    "twilio_from": ""
 }

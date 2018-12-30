@@ -15,6 +15,8 @@ class LCD:
         self.chars = chars
         self.line_1 = line_1
         self.line_2 = line_2
+        self.line_1_text = None
+        self.line_2_text = None
 
         GPIO.setwarnings(False)
         GPIO.setup(e, GPIO.OUT)
@@ -86,5 +88,9 @@ class LCD:
             self.write(ord(message[i]), self.chr)
 
     def write_both(self, line_1_text, line_2_text):
-        self.text(line_1_text, self.line_1)
-        self.text(line_2_text, self.line_2)
+        if line_1_text != self.line_1_text:
+            self.text(line_1_text, self.line_1)
+            self.line_1_text = line_1_text
+        if line_2_text != self.line_2_text:
+            self.text(line_2_text, self.line_2)
+            self.line_2_text = line_2_text
