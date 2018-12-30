@@ -98,7 +98,7 @@ def get_outputs(inputs, state, settings):
     else:
         outputs['alarm'] = True
 
-    outputs["line1"] = datetime.utcfromtimestamp(inputs["timestamp"]).strftime('%m/%d %H:%M:%S')
+    outputs["line1"] = datetime.fromtimestamp(inputs["timestamp"]).strftime('%m/%d %H:%M:%S')
     if len(state["message"]) > 16:
         msg = state["message"]
         msg_words = msg.split()
