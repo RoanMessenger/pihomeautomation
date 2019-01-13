@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import controller
+import copy
 import test_controller
 import time
 import json
@@ -57,7 +58,7 @@ def handle_message(msg):
     for e in events:
         print('EVENT: ' + str(e))
 
-        state, setting_changes, log_entries, messages = cont.handle_event(e, inputs, state, settings)
+        state, setting_changes, log_entries, messages = cont.handle_event(e, inputs, state, copy.deepcopy(settings))
 
         # handle settings changes
         if len(setting_changes) > 0:

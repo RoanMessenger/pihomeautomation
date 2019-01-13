@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import controller
+import copy
 import test_controller
 import sys
 import RPi.GPIO as GPIO
@@ -155,7 +156,7 @@ while True:
 
     # call controller for each event
     for e in events:
-        state, setting_changes, log_entries, messages = cont.handle_event(e, inputs, state, settings)
+        state, setting_changes, log_entries, messages = cont.handle_event(e, inputs, state, copy.deepcopy(settings))
 
         # handle settings changes
         if len(setting_changes) > 0:
