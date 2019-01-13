@@ -8,7 +8,7 @@
     <style>
         .case {
             width: 400px;
-            height: 600px;
+            height: 550px;
             background: linear-gradient(to bottom right, #8c6529, #785115);
             border-top: 20px solid rgba(255,255,255,0.3);
             border-left: 20px solid rgba(255,255,255,0.3);
@@ -154,6 +154,9 @@
         .led.yellow.active {
             background: radial-gradient(#FFFF00, #888800); box-shadow: 0 0 10px #FFFF00;
         }
+        .motion-and-gas {
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -186,14 +189,14 @@
                     &nbsp;
                     Inside Temp
                 </div>
-                <div v-for="(temp, index) in externalTemps">
-                    <span class="button" @click="lowerExternalTemp(index)">-</span>
-                    <span class="value">{{temp}}</span>
-                    <span class="button" @click="raiseExternalTemp(index)">+</span>
-                    &nbsp;
-                    Ext Temp {{index+1}}
-                </div>
                 <div>
+                    <span class="button" @click="lowerTempOutside">-</span>
+                    <span class="value">{{tempOutside}}</span>
+                    <span class="button" @click="raiseTempOutside">+</span>
+                    &nbsp;
+                    Outside Temp
+                </div>
+                <div class="motion-and-gas">
                     <div class="button" @click="toggleMotion">
                         <div class="yellow led" :class="{'active': motion}"></div>
                         &nbsp;
@@ -241,8 +244,8 @@
                 gas: false,
                 motion: false,
                 tempInside: 20.0,
+                tempOutside: 20.0,
                 humidity: 50.0,
-                externalTemps: [10.0, 10.0, 10.0],
 
                 //constants
                 keys: [
@@ -298,7 +301,7 @@
                 gas(val) { this.sendInputs(); },
                 motion(val) { this.sendInputs(); },
                 tempInside(val) { this.sendInputs(); },
-                externalTemps(val) { this.sendInputs(); },
+                tempOutside(val) { this.sendInputs(); },
                 humidity(val) { this.sendInputs(); },
             },
             methods: {
@@ -307,13 +310,9 @@
                         gas: this.gas,
                         motion: this.motion,
                         temp_inside: this.tempInside,
+                        temp_outside: this.tempOutside,
                         humidity: this.humidity,
                         timestamp: Math.floor(Date.now() / 1000),
-                        ...this.externalTemps.reduce((m, temp, i) => ({
-                            ...m,
-                            ['external_temp_'+i]: temp
-                        }), {}),
-                        external_temp_count: this.externalTemps.length,
                     });
                 },
 
@@ -321,12 +320,8 @@
                 press(key) { this.socket.send(key); },
                 raiseTempInside() { this.tempInside += this.tempAdjustment },
                 lowerTempInside() { this.tempInside -= this.tempAdjustment },
-                raiseExternalTemp(index) {
-                    this.externalTemps = this.externalTemps.map((temp, i) => i==index ? temp + this.tempAdjustment : temp);
-                },
-                lowerExternalTemp(index) {
-                    this.externalTemps = this.externalTemps.map((temp, i) => i==index ? temp - this.tempAdjustment : temp);
-                },
+                raiseTempOutside() { this.tempOutside += this.tempAdjustment },
+                lowerTempOutside() { this.tempOutside -= this.tempAdjustment },
                 raiseHumidity() { this.humidity += this.humidityAdjustment },
                 lowerHumidity() { this.humidity -= this.humidityAdjustment },
                 toggleMotion() { this.motion = !this.motion; },
