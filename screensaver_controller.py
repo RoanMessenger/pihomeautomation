@@ -60,33 +60,33 @@ def handle_event(event, inputs, state, settings, context):
 
 def get_outputs(inputs, state, settings, context):
     outputs = {
-        "line1":       datetime.fromtimestamp(inputs["timestamp"]).strftime('%m/%d %H:%M:%S'),
+        "line1":       datetime.fromtimestamp(inputs["timestamp"]).strftime('%m/%d %I:%M:%S%p'),
         "line2":       "",
     }
     last_gas = "Never"
     last_motion = "Never"
     running_since = "Unknown"
     if 'last_gas' in settings:
-        last_gas = datetime.fromtimestamp(settings["last_gas"]).strftime('%m/%d %H:%M:%S')
+        last_gas = datetime.fromtimestamp(settings["last_gas"]).strftime('%m/%d %I:%M:%S%p')
     if 'last_motion' in settings:
-        last_motion = datetime.fromtimestamp(settings["last_motion"]).strftime('%m/%d %H:%M:%S')
+        last_motion = datetime.fromtimestamp(settings["last_motion"]).strftime('%m/%d %I:%M:%S%p')
     if 'running_since' in settings:
-        running_since = datetime.fromtimestamp(settings["running_since"]).strftime('%m/%d %H:%M:%S')
+        running_since = datetime.fromtimestamp(settings["running_since"]).strftime('%m/%d %I:%M:%S%p')
 
     if state['screen_index'] == 0:
+        outputs['line2'] = "Temp Inside: " + str(inputs['temp_inside'])
+    elif state['screen_index'] == 1:
+        outputs['line2'] = "Temp Outside: " + str(inputs['temp_outside'])
+    elif state['screen_index'] == 2:
+        outputs['line2'] = "Humidity: " + str(inputs['humidity'])
+    elif state['screen_index'] == 3:
         outputs['line1'] = "Last Gas Sensor:"
         outputs['line2'] = last_gas
-    elif state['screen_index'] == 1:
+    elif state['screen_index'] == 4:
         outputs['line1'] = "Last Motion:"
         outputs['line2'] = last_motion
-    elif state['screen_index'] == 2:
+    elif state['screen_index'] == 5:
         outputs['line1'] = "Running Since:"
         outputs['line2'] = running_since
-    elif state['screen_index'] == 3:
-        outputs['line2'] = "Temp Inside: " + str(inputs['temp_inside'])
-    elif state['screen_index'] == 4:
-        outputs['line2'] = "Temp Outside: " + str(inputs['temp_outside'])
-    elif state['screen_index'] == 5:
-        outputs['line2'] = "Humidity: " + str(inputs['humidity'])
 
     return outputs

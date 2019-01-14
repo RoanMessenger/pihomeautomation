@@ -87,24 +87,15 @@
     "lcd_rs": 7, 
     "menu_timeout_seconds": 120, 
     "pir_pin": 11, 
-    "relay1_mode": "on", 
+    "relay1_mode": "auto",
     "relay1_pin": 9, 
-    "relay2_mode": "on", 
+    "relay2_mode": "auto",
     "relay2_pin": 17, 
-    "relay3_mode": "off", 
+    "relay3_mode": "auto",
     "relay3_pin": 22, 
     "relay_schedules": [
         {
-            "on_ranges": [
-                {
-                    "end": 840, 
-                    "start": 480
-                }, 
-                {
-                    "end": 720, 
-                    "start": 0
-                }
-            ], 
+            "on_ranges": [],
             "relay": 1
         }, 
         {

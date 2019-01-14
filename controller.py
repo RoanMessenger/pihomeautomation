@@ -24,19 +24,35 @@ import copy
 import screensaver_controller
 import alert_message_controller
 import prompt_controller
+import enter_time_range_controller
+import datetime
 
 
 # ACTIONS
+def add_on_range(rn):
+    def add_on_range_n(start, end):
+        def add_on_range_n_s_e(inputs, state, settings):
+            if 'relay_schedules' in settings:
+                new_schedules = copy.deepcopy(settings['relay_schedules'])
+                for rs in new_schedules:
+                    if int(rs['relay']) == int(rn):
+                        rs['on_ranges'].append({
+                            "start": start,
+                            "end": end
+                        })
+                        return state, {'relay_schedules': new_schedules}
+            return state, {}
+        return add_on_range_n_s_e
+    return add_on_range_n
+
+
 def delete_relay_schedule(rn, sn):
     def delete_relayn_schedulen(inputs, state, settings):
-        print("Deleting range")
-        print(settings['relay_schedules'])
         if 'relay_schedules' in settings:
             new_schedules = copy.deepcopy(settings['relay_schedules'])
             for rs in new_schedules:
                 if rs['relay'] == rn and len(rs['on_ranges']) > sn:
                     del rs['on_ranges'][sn]
-            print(new_schedules)
             return state, {'relay_schedules': new_schedules}
         else:
             return state, {}
@@ -169,6 +185,7 @@ def programs(inputs, state, settings):
                         ('Delete', delete_relay_schedule(rs['relay'], i))
                     ]
                 })
+            progs['relay'+str(rs['relay'])+'_add_range'] = (enter_time_range_controller, add_on_range(rs['relay']))
 
     # add in relay schedule menus
     if 'relay_triggers' in settings:
@@ -212,6 +229,27 @@ def quit_active_prog(state):
         return new_state
     else:
         return state
+
+
+# is the given relay on schedule to be on?
+def is_relay_on(inputs, settings, rn):
+    key = 'relay' + str(rn) + '_mode'
+    if key in settings and 'relay_schedules' in settings:
+        if settings[key] == 'on':
+            return True
+        elif settings[key] == 'auto':
+            dt = datetime.datetime.fromtimestamp(inputs["timestamp"])
+            for rs in settings['relay_schedules']:
+                if int(rs['relay']) == int(rn):
+                    for on_range in rs['on_ranges']:
+                        now = dt.hour * 60 + dt.minute
+                        start = int(on_range["start"])
+                        end = int(on_range["end"])
+                        now = now + (24 * 60) if now < start else now
+                        end = end + (24 * 60) if end < start else end
+                        if now < end:
+                            return True
+    return False
 
 
 # INITIAL STATE
@@ -280,9 +318,9 @@ def handle_event(event, inputs, state, settings):
 
 def get_outputs(inputs, state, settings):
     outputs = {
-        "relay1": 'relay1_mode' in settings and settings['relay1_mode'] == 'on',
-        "relay2": 'relay2_mode' in settings and settings['relay2_mode'] == 'on',
-        "relay3": 'relay3_mode' in settings and settings['relay3_mode'] == 'on',
+        "relay1": is_relay_on(inputs, settings, 1),
+        "relay2": is_relay_on(inputs, settings, 2),
+        "relay3": is_relay_on(inputs, settings, 3),
         "alarm": True if 'alarm_active' in settings and settings['alarm_active'] else False,
         "line1": "",
         "line2": "",
