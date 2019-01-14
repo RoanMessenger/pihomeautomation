@@ -20,8 +20,27 @@
 # alarm
 
 import menu_controller
+import copy
 import screensaver_controller
 import alert_message_controller
+import prompt_controller
+
+
+# ACTIONS
+def delete_relay_schedule(rn, sn):
+    def delete_relayn_schedulen(inputs, state, settings):
+        print("Deleting range")
+        print(settings['relay_schedules'])
+        if 'relay_schedules' in settings:
+            new_schedules = copy.deepcopy(settings['relay_schedules'])
+            for rs in new_schedules:
+                if rs['relay'] == rn and len(rs['on_ranges']) > sn:
+                    del rs['on_ranges'][sn]
+            print(new_schedules)
+            return state, {'relay_schedules': new_schedules}
+        else:
+            return state, {}
+    return delete_relayn_schedulen
 
 
 def cycle_relay_mode(n):
@@ -95,7 +114,7 @@ def relay_schedule_menu(rs):
     if 'on_ranges' in rs:
         for i, r in enumerate(rs['on_ranges']):
             menu.append((format_minutes(r['start'])+'-'+format_minutes(r['end']),
-                         "relay"+str(rs['relay'])+"_schedule"+str(i)))
+                         "prompt_delete_relay"+str(rs['relay'])+"_schedule"+str(i)))
     menu.append(("Add On-Range", "relay"+str(rs['relay'])+"_add_range"))
     return menu
 
@@ -142,6 +161,14 @@ def programs(inputs, state, settings):
     if 'relay_schedules' in settings:
         for rs in settings['relay_schedules']:
             progs['relay'+str(rs['relay'])+'_schedule'] = (menu_controller, relay_schedule_menu(rs))
+            for i, r in enumerate(rs['on_ranges']):
+                progs['prompt_delete_relay'+str(rs['relay'])+'_schedule'+str(i)] = (prompt_controller, {
+                    "text": "Delete range?",
+                    "choices": [
+                        ('Cancel', None),
+                        ('Delete', delete_relay_schedule(rs['relay'], i))
+                    ]
+                })
 
     # add in relay schedule menus
     if 'relay_triggers' in settings:
